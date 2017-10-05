@@ -3,7 +3,7 @@
 
 #include <QMainWindow>
 
-#include "component.h"
+#include "diagramnode.h"
 
 class Canvas;
 class QGraphicsView;
@@ -30,8 +30,13 @@ private:
 
     QToolBox *toolbox;
     QToolBar *toolbar;
-    QButtonGroup *button_gr;
-    QButtonGroup *bg_button_gr;
+    QButtonGroup *node_buttons;
+    QButtonGroup *background_buttons;
+
+    QAction *exit_action;
+    QAction *about_action;
+    QAction *undo_action;
+    QAction *delete_action;
 
     Ui::MainWindow *ui;
 
@@ -44,14 +49,18 @@ private:
     void create_toolbox();
     void create_menus();
 
-    QWidget*
+    static QWidget *widget_layout(QLayout *layout);
+
+    QWidget *
     create_bg_cell_widget(const QString &text, const QString &image);
-    QWidget*
-    create_cell_widget(const QString &text, Component::ComponentType type);
+    QWidget *
+    create_cell_widget(const QString &text, DiagramNode::DiagramNodeType type);
 
 private slots:
     void about();
     void undo();
+    void delete_item();
+    void node_button_clicked(int id);
 };
 
 #endif // MAINWINDOW_H

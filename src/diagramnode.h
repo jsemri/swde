@@ -1,24 +1,24 @@
-#ifndef COMPONENT_H
-#define COMPONENT_H
+#ifndef DIAGRAMNODE_H
+#define DIAGRAMNODE_H
 
 #include <QGraphicsPolygonItem>
 
-class Component : public QGraphicsPolygonItem
+class DiagramNode : public QGraphicsPolygonItem
 {
 public:
     enum {Type = UserType + 36};
-    enum ComponentType {Step, Condition};
+    enum DiagramNodeType {Step, Condition, None};
 
 private:
-    ComponentType comtype;
+    DiagramNodeType node_type;
     QPolygonF polyg;
     QMenu *context_menu;
 
 public:
-    Component
-    (ComponentType type, QMenu *context_menu, QGraphicsItem *parent = 0);
+    DiagramNode
+    (DiagramNodeType type, QMenu *context_menu, QGraphicsItem *parent = 0);
 
-    ComponentType get_type() const { return comtype; }
+    DiagramNodeType get_type() const { return node_type; }
     QPolygonF polygon() const { return polyg; }
     int type() const override { return Type; }
     QPixmap image() const;
@@ -34,4 +34,4 @@ signals:
 public slots:
 };
 
-#endif // COMPONENT_H
+#endif // DIAGRAMNODE_H

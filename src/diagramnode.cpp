@@ -3,11 +3,11 @@
 #include <QMenu>
 #include <QPainter>
 
-#include "component.h"
+#include "diagramnode.h"
 
-Component::Component
-(ComponentType type, QMenu *context_menu, QGraphicsItem *parent) :
-    QGraphicsPolygonItem(parent), comtype{type}, context_menu{context_menu}
+DiagramNode::DiagramNode
+(DiagramNodeType type, QMenu *context_menu, QGraphicsItem *parent) :
+    QGraphicsPolygonItem(parent), node_type{type}, context_menu{context_menu}
 {
     switch (type) {
         case Condition:
@@ -32,7 +32,7 @@ Component::Component
     setFlag(QGraphicsItem::ItemSendsGeometryChanges, true);
 }
 
-QPixmap Component::image() const
+QPixmap DiagramNode::image() const
 {
     QPixmap pixmap(250, 250);
     pixmap.fill(Qt::transparent);
@@ -44,14 +44,15 @@ QPixmap Component::image() const
     return pixmap;
 }
 
-void Component::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
+void DiagramNode::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 {
     scene()->clearSelection();
     setSelected(true);
     context_menu->exec(event->screenPos());
 }
 
-QVariant Component::itemChange(GraphicsItemChange change, const QVariant &value)
+QVariant
+DiagramNode::itemChange(GraphicsItemChange change, const QVariant &value)
 {
     if (change == QGraphicsItem::ItemPositionChange) {
         /*

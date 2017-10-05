@@ -16,10 +16,10 @@ SOURCES +=   \
         src/mainwindow.cpp \
         src/main.cpp \
     src/canvas.cpp \
-    src/component.cpp
+    src/diagramnode.cpp
 
 HEADERS  += src/mainwindow.h \
     src/canvas.h \
-    src/component.h
+    src/diagramnode.h
 
 FORMS    += src/mainwindow.ui
