@@ -12,11 +12,14 @@ TARGET = swde
 TEMPLATE = app
 
 
-SOURCES +=   src/state.cpp \
+SOURCES +=   \
         src/mainwindow.cpp \
-        src/main.cpp
+        src/main.cpp \
+    src/canvas.cpp \
+    src/component.cpp
 
 HEADERS  += src/mainwindow.h \
-    src/state.h
+    src/canvas.h \
+    src/component.h
 
 FORMS    += src/mainwindow.ui
