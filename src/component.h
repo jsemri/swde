@@ -6,7 +6,28 @@
 class Component : public QGraphicsPolygonItem
 {
 public:
-    Component(QGraphicsItem *parent = 0);
+    enum {Type = UserType + 36};
+    enum ComponentType {Step, Condition};
+
+private:
+    ComponentType comtype;
+    QPolygonF polyg;
+    QMenu *context_menu;
+
+public:
+    Component
+    (ComponentType type, QMenu *context_menu, QGraphicsItem *parent = 0);
+
+    ComponentType get_type() const { return comtype; }
+    QPolygonF polygon() const { return polyg; }
+    int type() const override { return Type; }
+    QPixmap image() const;
+
+protected:
+    void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) override;
+
+    QVariant
+    itemChange(GraphicsItemChange change, const QVariant &value) override;
 
 signals:
 
