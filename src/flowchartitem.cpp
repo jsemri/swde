@@ -6,11 +6,11 @@
 
 #include "debug.h"
 #include "canvas.h"
-#include "diagramnode.h"
+#include "flowchartitem.h"
 
 FlowChartItem::FlowChartItem
 (FlowChartItemType type, QMenu *context_menu, QGraphicsItem *parent) :
-    QGraphicsPolygonItem(parent), node_type{type}, context_menu{context_menu}
+    QGraphicsPolygonItem(parent), item_type{type}, context_menu{context_menu}
 {
     switch (type) {
         case Condition:

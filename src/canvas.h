@@ -6,7 +6,7 @@
 #include <QWidget>
 #include <QList>
 
-#include "diagramnode.h"
+#include "flowchartitem.h"
 
 class Qmenu;
 
@@ -14,13 +14,15 @@ class Canvas : public QGraphicsScene
 {
  //   Q_OBJECT
 public:
-    enum Mode {InsertNode, InsertLine, InsertText, MoveNode, Idle};
+    // states of canvas
+    enum Mode {InsertItem, InsertLine, InsertText, MoveItem, Idle};
+
 private:
-    QMenu *node_menu;
-    FlowChartItem *node;
+    QMenu *item_menu;
+    FlowChartItem *item;
     FlowChartItem *line;
     Mode mode;
-    FlowChartItem::FlowChartItemType node_type;
+    FlowChartItem::FlowChartItemType item_type;
 
     QGraphicsItem *active_item;
 
@@ -31,13 +33,13 @@ private:
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) override;
 
 public:
-    explicit Canvas(QMenu *node_menu, QWidget *parrent=0);
+    explicit Canvas(QMenu *item_menu, QWidget *parrent=0);
 
     void update_positions(const QRectF &rect);
 
 public slots:
     void set_mode(Mode m) { mode = m; }
-    void set_node_type(FlowChartItem::FlowChartItemType type) { node_type = type; }
+    void set_item_type(FlowChartItem::FlowChartItemType type) { item_type = type; }
 
 signals:
 };

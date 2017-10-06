@@ -3,7 +3,7 @@
 
 #include <QMainWindow>
 
-#include "diagramnode.h"
+#include "flowchartitem.h"
 
 class Canvas;
 class QGraphicsView;
@@ -34,7 +34,7 @@ private:
 
     // bottom bar
     QToolBox *toolbox;
-    QButtonGroup *node_buttons;
+    QButtonGroup *item_buttons;
     QButtonGroup *background_buttons;
 
     // top bar
@@ -89,7 +89,7 @@ private slots:
     void about();
     void undo();
     void delete_item();
-    void node_button_clicked(int id);
+    void item_button_clicked(int id);
     void item_color_changed();
     void scale_changed(const QString &scale);
 };

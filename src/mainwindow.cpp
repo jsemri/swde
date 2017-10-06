@@ -12,7 +12,7 @@
 
 #include "mainwindow.h"
 #include "canvas.h"
-#include "diagramnode.h"
+#include "flowchartitem.h"
 
 #include "ui_mainwindow.h"
 
@@ -150,10 +150,10 @@ QMenu *MainWindow::create_color_menu(const char *slot, QColor default_color)
 void MainWindow::create_toolbox() {
 
     // group of buttons which manage diagram elements
-    node_buttons = new QButtonGroup(this);
-    node_buttons->setExclusive(false);
-    connect(node_buttons, SIGNAL(buttonClicked(int)), this,
-            SLOT(node_button_clicked(int)));
+    item_buttons = new QButtonGroup(this);
+    item_buttons->setExclusive(false);
+    connect(item_buttons, SIGNAL(buttonClicked(int)), this,
+            SLOT(item_button_clicked(int)));
 
     QGridLayout *gl = new QGridLayout;
     gl->addWidget(create_cell_widget(tr("Process"), FlowChartItem::Process),
@@ -164,7 +164,7 @@ void MainWindow::create_toolbox() {
     QToolButton *text_button = new QToolButton;
     text_button->setCheckable(true);
     text_button->setIconSize(QSize(ICON_SIZE, ICON_SIZE));
-    node_buttons->addButton(text_button, FlowChartItem::None);
+    item_buttons->addButton(text_button, FlowChartItem::None);
     QGridLayout *text_layout = new QGridLayout;
     text_layout->addWidget(text_button, 0, 0, Qt::AlignCenter);
     text_layout->addWidget(new QLabel(tr("Text")),1 ,0 , Qt::AlignCenter);
@@ -198,7 +198,7 @@ QWidget *MainWindow::widget_layout(QLayout *layout) {
     return widget;
 }
 
-// create button with node insertion
+// create button with item insertion
 QWidget *
 MainWindow::create_cell_widget(const QString &text,
                                FlowChartItem::FlowChartItemType type)
@@ -211,7 +211,7 @@ MainWindow::create_cell_widget(const QString &text,
     button->setIcon(icon);
     button->setIconSize(QSize(ICON_SIZE, ICON_SIZE));
     button->setCheckable(true);
-    node_buttons->addButton(button, int(type));
+    item_buttons->addButton(button, int(type));
 
     QGridLayout *layout = new QGridLayout;
     //layout->addWidget(button);
@@ -241,11 +241,11 @@ void MainWindow::item_color_changed() {
 
 }
 
-void MainWindow::node_button_clicked(int id) {
+void MainWindow::item_button_clicked(int id) {
 
     // set down other buttons
-    auto clicked_button = node_buttons->button(id);
-    for (auto &button : node_buttons->buttons()) {
+    auto clicked_button = item_buttons->button(id);
+    for (auto &button : item_buttons->buttons()) {
         if (clicked_button != button) {
             button->setChecked(false);
         }
@@ -258,8 +258,8 @@ void MainWindow::node_button_clicked(int id) {
         canvas->set_mode(Canvas::Idle);
     }
     else {
-        canvas->set_mode(Canvas::InsertNode);
-        canvas->set_node_type(FlowChartItem::FlowChartItemType(id));
+        canvas->set_mode(Canvas::InsertItem);
+        canvas->set_item_type(FlowChartItem::FlowChartItemType(id));
     }
 }
 

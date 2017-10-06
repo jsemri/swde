@@ -16,10 +16,12 @@ SOURCES +=   \
         src/mainwindow.cpp \
         src/main.cpp \
     src/canvas.cpp \
-    src/diagramnode.cpp
+    src/flowchartitem.cpp \
+    src/debug.cpp
 
 HEADERS  += src/mainwindow.h \
     src/canvas.h \
-    src/diagramnode.h
+    src/flowchartitem.h \
+    src/debug.h
 
 FORMS    += src/mainwindow.ui

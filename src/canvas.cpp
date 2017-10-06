@@ -6,9 +6,9 @@
 #include "debug.h"
 #include "canvas.h"
 
-Canvas::Canvas(QMenu *node_menu, QWidget *parrent) :
-    QGraphicsScene{parrent}, node_menu{node_menu}, node{0}, line{0},
-    mode{Idle}, node_type{FlowChartItem::None}, active_item{nullptr}
+Canvas::Canvas(QMenu *item_menu, QWidget *parrent) :
+    QGraphicsScene{parrent}, item_menu{item_menu}, item{0}, line{0},
+    mode{Idle}, item_type{FlowChartItem::None}, active_item{nullptr}
 {
     setSceneRect(QRectF(0, 0, 400, 400));
     setBackgroundBrush(Qt::white);
@@ -23,12 +23,12 @@ void Canvas::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 
     ENTRY
 
-    FlowChartItem *node;
+    FlowChartItem *item;
     switch (mode) {
-        case InsertNode:
-            node = new FlowChartItem(node_type, node_menu);
-            addItem(node);
-            node->setPos(event->scenePos());
+        case InsertItem:
+            item = new FlowChartItem(item_type, item_menu);
+            addItem(item);
+            item->setPos(event->scenePos());
             break;
         case Idle:
             active_item = itemAt(event->scenePos(), QTransform());
