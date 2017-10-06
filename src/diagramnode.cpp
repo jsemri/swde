@@ -2,11 +2,14 @@
 #include <QGraphicsSceneContextMenuEvent>
 #include <QMenu>
 #include <QPainter>
+#include <QDebug>
 
+#include "debug.h"
+#include "canvas.h"
 #include "diagramnode.h"
 
-DiagramNode::DiagramNode
-(DiagramNodeType type, QMenu *context_menu, QGraphicsItem *parent) :
+FlowChartItem::FlowChartItem
+(FlowChartItemType type, QMenu *context_menu, QGraphicsItem *parent) :
     QGraphicsPolygonItem(parent), node_type{type}, context_menu{context_menu}
 {
     switch (type) {
@@ -15,7 +18,7 @@ DiagramNode::DiagramNode
                   << QPointF(100, 0) << QPointF(0, -100)
                   << QPointF(-100, 0);
             break;
-        case Step:
+        case Process:
             polyg << QPointF(-100, -100) << QPointF(100, -100)
                   << QPointF(100, 100) << QPointF(-100, 100)
                   << QPointF(-100, -100);
@@ -32,7 +35,7 @@ DiagramNode::DiagramNode
     setFlag(QGraphicsItem::ItemSendsGeometryChanges, true);
 }
 
-QPixmap DiagramNode::image() const
+QPixmap FlowChartItem::image() const
 {
     QPixmap pixmap(250, 250);
     pixmap.fill(Qt::transparent);
@@ -44,7 +47,7 @@ QPixmap DiagramNode::image() const
     return pixmap;
 }
 
-void DiagramNode::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
+void FlowChartItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 {
     scene()->clearSelection();
     setSelected(true);
@@ -52,8 +55,10 @@ void DiagramNode::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 }
 
 QVariant
-DiagramNode::itemChange(GraphicsItemChange change, const QVariant &value)
+FlowChartItem::itemChange(GraphicsItemChange change, const QVariant &value)
 {
+    ENTRY
+
     if (change == QGraphicsItem::ItemPositionChange) {
         /*
         foreach (Arrow *arrow, arrows) {
@@ -63,4 +68,29 @@ DiagramNode::itemChange(GraphicsItemChange change, const QVariant &value)
     }
 
     return value;
+}
+
+void FlowChartItem::move_top() {
+    setZValue(1000);
+}
+
+void FlowChartItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{
+    ENTRY
+
+    pointer_pos = event->scenePos();
+    move_top();
+}
+
+void FlowChartItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{
+    ENTRY
+    // move only if selected
+    if (isSelected()) {
+        QPointF current_pos = event->scenePos();
+        qreal xdiff = current_pos.x() - pointer_pos.x();
+        qreal ydiff = current_pos.y() - pointer_pos.y();
+        moveBy(xdiff, ydiff);
+        pointer_pos = current_pos;
+    }
 }

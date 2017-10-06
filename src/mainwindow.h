@@ -10,6 +10,9 @@ class QGraphicsView;
 class QHBoxLayout;
 class QToolBox;
 class QButtonGroup;
+class QComboBox;
+class QToolButton;
+class QFontComboBox;
 
 namespace Ui {
 class MainWindow;
@@ -24,19 +27,43 @@ private:
     QGraphicsView *view;
     Canvas *canvas;
 
+    // top menus
     QMenu *file_menu;
     QMenu *edit_menu;
     QMenu *about_menu;
 
+    // bottom bar
     QToolBox *toolbox;
-    QToolBar *toolbar;
     QButtonGroup *node_buttons;
     QButtonGroup *background_buttons;
 
+    // top bar
+    QToolBar *toolbar;
+    QToolBar *edit_toolbar;
+    QToolBar *font_toolbar;
+    QToolBar *color_toolbar;
+    QToolBar *view_toolbar;
+
+    QComboBox *scale_combo;
+    QComboBox *font_size_combo;
+    QComboBox *text_color_combo;
+    QComboBox *item_color_combo;
+    QFontComboBox *font_combo;
+
+    QToolButton *fill_color_button;
+    QToolButton *font_color_button;
+    QToolButton *line_color_button;
+
+    QButtonGroup *fill_collor_buttons;
+    QButtonGroup *line_collor_buttons;
+    QButtonGroup *pointer_buttons;
+
+    // actions
     QAction *exit_action;
     QAction *about_action;
     QAction *undo_action;
     QAction *delete_action;
+    QAction *fill_action;
 
     Ui::MainWindow *ui;
 
@@ -47,6 +74,7 @@ public:
 private:
     void create_actions();
     void create_toolbox();
+    void create_toolbars();
     void create_menus();
 
     static QWidget *widget_layout(QLayout *layout);
@@ -54,13 +82,16 @@ private:
     QWidget *
     create_bg_cell_widget(const QString &text, const QString &image);
     QWidget *
-    create_cell_widget(const QString &text, DiagramNode::DiagramNodeType type);
+    create_cell_widget(const QString &text, FlowChartItem::FlowChartItemType type);
+    QMenu *create_color_menu(const char *slot, QColor default_color=Qt::white);
 
 private slots:
     void about();
     void undo();
     void delete_item();
     void node_button_clicked(int id);
+    void item_color_changed();
+    void scale_changed(const QString &scale);
 };
 
 #endif // MAINWINDOW_H

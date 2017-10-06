@@ -3,31 +3,37 @@
 
 #include <QGraphicsPolygonItem>
 
-class DiagramNode : public QGraphicsPolygonItem
+class FlowChartItem : public QGraphicsPolygonItem
 {
 public:
     enum {Type = UserType + 36};
-    enum DiagramNodeType {Step, Condition, None};
+    enum FlowChartItemType {Process, Condition, None};
 
 private:
-    DiagramNodeType node_type;
+    FlowChartItemType node_type;
     QPolygonF polyg;
     QMenu *context_menu;
+    QPointF pointer_pos;
 
 public:
-    DiagramNode
-    (DiagramNodeType type, QMenu *context_menu, QGraphicsItem *parent = 0);
+    FlowChartItem
+    (FlowChartItemType type, QMenu *context_menu, QGraphicsItem *parent = 0);
 
-    DiagramNodeType get_type() const { return node_type; }
+    FlowChartItemType get_type() const { return node_type; }
     QPolygonF polygon() const { return polyg; }
     int type() const override { return Type; }
     QPixmap image() const;
+
+    void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
 
 protected:
     void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) override;
 
     QVariant
     itemChange(GraphicsItemChange change, const QVariant &value) override;
+
+    void move_top();
 
 signals:
 
