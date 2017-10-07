@@ -14,20 +14,21 @@ ifeq ("$(HOST)","merlin.fit.vutbr.cz")
         endif
 endif
 
-SRC_PATH=$(shell pwd)/src
+PROJ_PATH=$(shell pwd)/swde
+SRC_PATH=$(PROJ_PATH)/src
 SRC_FILES= $(wildcard $(SRC_PATH)/*.cpp)
 HDR_FILES= $(wildcard $(SRC_PATH)/*.h)
 
-.PHONY: clean all cli doxygen pack run run-gui
+.PHONY: clean
 
 all: $(PROJ)
 
 $(PROJ): $(SRC_FILES) $(HDR_FILES)
-	-@cd $(SRC_PATH) && $(QMAKE) && make
-	@mv $(SRC_PATH)/$(PROJ) .
+	-@cd $(PROJ_PATH) && $(QMAKE) && make
+	@mv $(PROJ_PATH)/$(PROJ) .
 
 clean:
-	-@cd $(SRC_PATH) && make clean
-	rm -f $(SRC_PATH)/Makefile
-	rm -f $(SRC_PATH)/$(PROJ)
+	-@cd $(PROJ_PATH) && make clean
+	rm -f $(PROJ_PATH)/Makefile
+	rm -f $(PROJ_PATH)/$(PROJ)
 	rm -f $(PROJ)

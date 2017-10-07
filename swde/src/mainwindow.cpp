@@ -8,11 +8,13 @@
 #include <QComboBox>
 #include <QFontComboBox>
 #include <QToolBar>
+#include <QKeyEvent>
 #include <cassert>
 
 #include "mainwindow.h"
 #include "canvas.h"
 #include "flowchartitem.h"
+#include "debug.h"
 
 #include "ui_mainwindow.h"
 
@@ -43,6 +45,7 @@ MainWindow::MainWindow(QWidget *parent) :
     setCentralWidget(widget_layout(layout));
     create_toolbars();
 
+    setWindowIcon(QIcon(":/images/swde.png"));
     setWindowTitle("Simple Workflow Diagram Editor");
 }
 
@@ -60,11 +63,40 @@ void MainWindow::create_actions() {
     connect(about_action, SIGNAL(triggered()), this, SLOT(about()));
 
     // actions on edit toolbar
-    undo_action = new QAction(tr("&Undo"), this);
-    connect(undo_action, SIGNAL(triggered()), this, SLOT(undo()));
-
-    delete_action = new QAction(tr("&Delete"), this);
+    delete_action = new QAction(QIcon(":/images/delete.png"), tr("Delete"),
+                                this);
+    delete_action->setShortcut(tr("Delete"));
+    delete_action->setStatusTip(tr("Delete item from canvas."));
     connect(delete_action, SIGNAL(triggered()), this, SLOT(delete_item()));
+
+    copy_format_action = new QAction(QIcon(":/images/copyformat.png"),
+                                     tr("Copy format"), this);
+    copy_format_action->setShortcut(tr("Ctrl+f"));
+    copy_format_action->setStatusTip(tr("Copy item format to clipboard."));
+
+    copy_action = new QAction(QIcon(":/images/copy.png"), tr("Copy"),
+                              this);
+    copy_action->setShortcut(tr("Ctrl+c"));
+    copy_action->setStatusTip(tr("Copy item to clipboard."));
+
+    paste_action = new QAction(QIcon(":/images/paste.png"), tr("Paste"), this);
+    paste_action->setShortcut(tr("Ctrl+p"));
+    paste_action->setStatusTip(tr("Paste item from clipboard to canvas."));
+
+    to_front_action = new QAction(QIcon(":/images/tofront.png"),
+                                  tr("To Front"), this);
+    to_front_action->setStatusTip(tr("Move item to front."));
+
+    to_back_action = new QAction(QIcon(":/images/toback.png"), tr("To Back"),
+                                 this);
+    to_back_action->setStatusTip(tr("Move item to back."));
+
+    undo_action = new QAction(QIcon(":/images/undo.png"), tr("Undo"),
+                              this);
+    undo_action->setShortcut(tr("Ctrl+z"));
+    undo_action->setStatusTip(tr("Undo current action."));
+    undo_action->setChecked(false);
+    connect(undo_action, SIGNAL(triggered()), this, SLOT(undo()));
 }
 
 void MainWindow::create_toolbars() {
@@ -72,6 +104,11 @@ void MainWindow::create_toolbars() {
     // toolbars like in menu
     edit_toolbar = addToolBar(tr("Edit"));
     edit_toolbar->addAction(delete_action);
+    edit_toolbar->addAction(copy_format_action);
+    edit_toolbar->addAction(copy_action);
+    edit_toolbar->addAction(paste_action);
+    edit_toolbar->addAction(to_front_action);
+    edit_toolbar->addAction(to_back_action);
     edit_toolbar->addAction(undo_action);
 
     // font and text buttons
@@ -203,7 +240,7 @@ QWidget *
 MainWindow::create_cell_widget(const QString &text,
                                FlowChartItem::FlowChartItemType type)
 {
-    FlowChartItem item(type, edit_menu);
+    FlowChartItem item(type, Qt::white, edit_menu);
     QIcon icon(item.image());
 
     //QToolButton *button = new QToolButton;
@@ -219,6 +256,13 @@ MainWindow::create_cell_widget(const QString &text,
     layout->addWidget(new QLabel(text), 1, 0, Qt::AlignCenter);
 
     return widget_layout(layout);
+}
+
+void MainWindow::keyPressEvent(QKeyEvent *event) {
+    if (event->key() == Qt::Key_Escape) {
+        clear_focus();
+    }
+    QMainWindow::keyPressEvent(event);
 }
 
 // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -252,12 +296,15 @@ void MainWindow::item_button_clicked(int id) {
     }
 
     if (!clicked_button->isChecked()) {
-        canvas->set_mode(Canvas::Idle);
+        // button is disabled - disble inserting mode
+        canvas->set_mode(Canvas::MoveItem);
     }
     else if (FlowChartItem::FlowChartItemType(id) == FlowChartItem::None) {
-        canvas->set_mode(Canvas::Idle);
+        // enable text insertion
+        canvas->set_mode(Canvas::MoveItem);
     }
     else {
+        // button is enabled now - enable item insertion
         canvas->set_mode(Canvas::InsertItem);
         canvas->set_item_type(FlowChartItem::FlowChartItemType(id));
     }
@@ -270,4 +317,11 @@ void MainWindow::scale_changed(const QString &scale) {
     view->resetMatrix();
     view->translate(old_matrix.dx(), old_matrix.dy());
     view->scale(new_scale, new_scale);
+}
+
+void MainWindow::clear_focus() {
+    for (auto & but : item_buttons->buttons()) {
+        but->setChecked(false);
+        canvas->set_mode();
+    }
 }

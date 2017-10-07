@@ -9,7 +9,8 @@
 #include "flowchartitem.h"
 
 FlowChartItem::FlowChartItem
-(FlowChartItemType type, QMenu *context_menu, QGraphicsItem *parent) :
+(FlowChartItemType type, QColor color, QMenu *context_menu,
+ QGraphicsItem *parent) :
     QGraphicsPolygonItem(parent), item_type{type}, context_menu{context_menu}
 {
     switch (type) {
@@ -30,10 +31,12 @@ FlowChartItem::FlowChartItem
             break;
     }
     setPolygon(polyg);
+    setBrush(QBrush(color));
     setFlag(QGraphicsItem::ItemIsMovable, true);
     setFlag(QGraphicsItem::ItemIsSelectable, true);
     setFlag(QGraphicsItem::ItemSendsGeometryChanges, true);
 }
+
 
 QPixmap FlowChartItem::image() const
 {

@@ -13,15 +13,17 @@ TEMPLATE = app
 
 
 SOURCES +=   \
-        mainwindow.cpp \
-        main.cpp \
-    canvas.cpp \
-    flowchartitem.cpp \
-    debug.cpp
+        src/mainwindow.cpp \
+        src/main.cpp \
+    src/canvas.cpp \
+    src/flowchartitem.cpp \
+    src/debug.cpp
 
-HEADERS  += mainwindow.h \
-   canvas.h \
-   flowchartitem.h \
-   debug.h
+HEADERS  += src/mainwindow.h \
+   src/canvas.h \
+   src/flowchartitem.h \
+   src/debug.h
 
-FORMS    += mainwindow.ui
+RESOURCES += images.qrc
+
+FORMS    += src/mainwindow.ui

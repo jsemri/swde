@@ -2,7 +2,6 @@
 #define CANVAS_H
 
 #include <QGraphicsScene>
-//#include <QGraphicsItem>
 #include <QWidget>
 #include <QList>
 
@@ -23,6 +22,7 @@ private:
     FlowChartItem *line;
     Mode mode;
     FlowChartItem::FlowChartItemType item_type;
+    QColor item_color;
 
     QGraphicsItem *active_item;
 
@@ -38,7 +38,8 @@ public:
     void update_positions(const QRectF &rect);
 
 public slots:
-    void set_mode(Mode m) { mode = m; }
+    void set_mode(Mode m = MoveItem) { mode = m; }
+    void set_color(QColor color) { item_color = color; }
     void set_item_type(FlowChartItem::FlowChartItemType type) { item_type = type; }
 
 signals:

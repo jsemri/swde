@@ -8,7 +8,8 @@
 
 Canvas::Canvas(QMenu *item_menu, QWidget *parrent) :
     QGraphicsScene{parrent}, item_menu{item_menu}, item{0}, line{0},
-    mode{Idle}, item_type{FlowChartItem::None}, active_item{nullptr}
+    mode{MoveItem}, item_type{FlowChartItem::None}, item_color{Qt::white},
+    active_item{nullptr}
 {
     setSceneRect(QRectF(0, 0, 400, 400));
     setBackgroundBrush(Qt::white);
@@ -26,11 +27,11 @@ void Canvas::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     FlowChartItem *item;
     switch (mode) {
         case InsertItem:
-            item = new FlowChartItem(item_type, item_menu);
+            item = new FlowChartItem(item_type, item_color, item_menu);
             addItem(item);
             item->setPos(event->scenePos());
             break;
-        case Idle:
+        case MoveItem:
             active_item = itemAt(event->scenePos(), QTransform());
             QGraphicsScene::mousePressEvent(event);
             if (active_item) {
@@ -45,7 +46,7 @@ void Canvas::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
 
     ENTRY
 
-    if (mode == Idle) {
+    if (mode == MoveItem) {
         if (active_item) {
             QGraphicsScene::mouseMoveEvent(event);
         }
@@ -56,7 +57,7 @@ void Canvas::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
 
     ENTRY
 
-    if (mode == Idle) {
+    if (mode == MoveItem) {
         QGraphicsScene::mouseReleaseEvent(event);
         if (active_item) {
             // set item back

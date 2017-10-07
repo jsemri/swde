@@ -61,8 +61,16 @@ private:
     // actions
     QAction *exit_action;
     QAction *about_action;
+
     QAction *undo_action;
+    QAction *copy_action;
+    QAction *paste_action;
+    QAction *to_front_action;
+    QAction *to_back_action;
     QAction *delete_action;
+    QAction *copy_format_action;
+
+    QAction *clear_focus_action;
     QAction *fill_action;
 
     Ui::MainWindow *ui;
@@ -85,6 +93,8 @@ private:
     create_cell_widget(const QString &text, FlowChartItem::FlowChartItemType type);
     QMenu *create_color_menu(const char *slot, QColor default_color=Qt::white);
 
+    void keyPressEvent(QKeyEvent *event) override;
+
 private slots:
     void about();
     void undo();
@@ -92,6 +102,7 @@ private slots:
     void item_button_clicked(int id);
     void item_color_changed();
     void scale_changed(const QString &scale);
+    void clear_focus();
 };
 
 #endif // MAINWINDOW_H

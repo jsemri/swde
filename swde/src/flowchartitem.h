@@ -19,7 +19,8 @@ private:
 
 public:
     FlowChartItem
-    (FlowChartItemType type, QMenu *context_menu, QGraphicsItem *parent = 0);
+    (FlowChartItemType type, QColor color, QMenu *context_menu,
+     QGraphicsItem *parent = 0);
 
     FlowChartItemType get_type() const { return item_type; }
     QPolygonF polygon() const { return polyg; }
