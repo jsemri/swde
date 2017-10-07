@@ -1,4 +1,5 @@
 PROJ=swde
+PROJ_NAME=flowchart_editor
 QMAKE=qmake
 HOST=$(shell hostname)
 
@@ -21,14 +22,14 @@ HDR_FILES= $(wildcard $(SRC_PATH)/*.h)
 
 .PHONY: clean
 
-all: $(PROJ)
+all: $(PROJ_NAME)
 
-$(PROJ): $(SRC_FILES) $(HDR_FILES)
+$(PROJ_NAME): $(SRC_FILES) $(HDR_FILES)
 	-@cd $(PROJ_PATH) && $(QMAKE) && make
-	@mv $(PROJ_PATH)/$(PROJ) .
+	@mv $(PROJ_PATH)/$(PROJ_NAME) .
 
 clean:
 	-@cd $(PROJ_PATH) && make clean
 	rm -f $(PROJ_PATH)/Makefile
-	rm -f $(PROJ_PATH)/$(PROJ)
-	rm -f $(PROJ)
+	rm -f $(PROJ_PATH)/$(PROJ_NAME)
+	rm -f $(PROJ_NAME)

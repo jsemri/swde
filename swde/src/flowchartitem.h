@@ -38,6 +38,9 @@ protected:
 
     void move_top();
 
+public:
+    void change_color(QColor color) { setBrush(QBrush(color));}
+
 signals:
 
 public slots:

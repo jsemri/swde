@@ -34,9 +34,6 @@ void Canvas::mousePressEvent(QGraphicsSceneMouseEvent *event) {
         case MoveItem:
             active_item = itemAt(event->scenePos(), QTransform());
             QGraphicsScene::mousePressEvent(event);
-            if (active_item) {
-
-            }
         default:
             break;
     };

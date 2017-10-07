@@ -37,6 +37,7 @@ MainWindow::MainWindow(QWidget *parent) :
     view->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
     view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    view->fitInView(0, 0, 400, 400, Qt::KeepAspectRatio);
     view->setEnabled(true);
 
     layout = new QHBoxLayout();
@@ -54,7 +55,8 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::create_actions() {
+void MainWindow::create_actions()
+{
     // actions in main window toolbars
     exit_action = new QAction(tr("E&xit"), this);
     connect(exit_action, SIGNAL(triggered()), this, SLOT(close()));
@@ -99,8 +101,8 @@ void MainWindow::create_actions() {
     connect(undo_action, SIGNAL(triggered()), this, SLOT(undo()));
 }
 
-void MainWindow::create_toolbars() {
-
+void MainWindow::create_toolbars()
+{
     // toolbars like in menu
     edit_toolbar = addToolBar(tr("Edit"));
     edit_toolbar->addAction(delete_action);
@@ -111,7 +113,36 @@ void MainWindow::create_toolbars() {
     edit_toolbar->addAction(to_back_action);
     edit_toolbar->addAction(undo_action);
 
+    scale_combo = new QComboBox;
+    QStringList scales;
+    scales << tr("50%") << tr("75%") << tr("100%") << tr("125%") << tr("150%");
+    scale_combo->addItems(scales);
+    scale_combo->setCurrentIndex(2);
+    connect(scale_combo, SIGNAL(currentIndexChanged(QString)), this,
+                                SLOT(scale_changed(QString)));
+
+    edit_toolbar->addWidget(scale_combo);
+
+    // creating a color button with popup menu
+    // color of item is changed either when button clicked or color is picked
+    // from popup menu
+    fill_color_button = new QToolButton;
+    fill_color_button->setPopupMode(QToolButton::MenuButtonPopup);
+    fill_color_button->setMenu(create_color_menu(SLOT(item_color_changed())));
+    fill_action = fill_color_button->menu()->defaultAction();
+    fill_color_button->setIcon(create_color_icon());
+    connect(fill_color_button, SIGNAL(clicked()), this,
+            SLOT(fill_button_triggered()));
+
+    item_toolbar = addToolBar(tr("Color"));
+    item_toolbar->addWidget(fill_color_button);
+
+
+
+    // @@@@@@@@@@@@@@@@@@@@@@
     // font and text buttons
+    // @@@@@@@@@@@@@@@@@@@@@@
+    /*
     font_combo = new QFontComboBox;
     // XXX connect to change font
     font_size_combo = new QComboBox;
@@ -125,66 +156,16 @@ void MainWindow::create_toolbars() {
     font_color_button = new QToolButton;
     font_color_button->setPopupMode(QToolButton::MenuButtonPopup);
     font_color_button->setMenu(create_color_menu(SLOT(item_color_changed())));
-
-    fill_color_button = new QToolButton;
-    fill_color_button->setPopupMode(QToolButton::MenuButtonPopup);
-    fill_color_button->setMenu(create_color_menu(SLOT(item_color_changed())));
-    fill_action = fill_color_button->menu()->defaultAction();
     //fill_color_button->setIcon(te));
     font_toolbar = addToolBar(tr("Font"));
     font_toolbar->addWidget(font_color_button);
-
-    scale_combo = new QComboBox;
-    QStringList scales;
-    scales << tr("50%") << tr("75%") << tr("100%") << tr("125%") << tr("150%");
-    scale_combo->addItems(scales);
-    scale_combo->setCurrentIndex(2);
-    connect(scale_combo, SIGNAL(currentIndexChanged(QString)), this,
-                                SLOT(scale_changed(QString)));
-
-    color_toolbar = addToolBar(tr("Color"));
-    color_toolbar->addWidget(font_color_button);
-    color_toolbar->addWidget(fill_color_button);
-    color_toolbar->addWidget(scale_combo);
-}
-
-QMenu *MainWindow::create_color_menu(const char *slot, QColor default_color)
-{
-    // colors and names
-    QList<QColor> colors;
-    colors << Qt::black << Qt::white << Qt::red << Qt::blue << Qt::green;
-    QStringList names;
-    names << tr("black") << tr("white") << tr("red") << tr("blue")
-          << tr("green");
-
-    // this must hold
-    assert(names.count() == colors.count());
-
-    // creating a menu
-    QMenu *color_menu = new QMenu(this);
-    for (int i = 0; i < colors.count(); i++) {
-        QColor col = colors.at(i);
-        QAction *action = new QAction(names.at(i), this);
-        action->setData(col);
-        // creating icon
-        QPixmap pixmap(20, 20);
-        QPainter painter(&pixmap);
-        painter.setPen(Qt::NoPen);
-        painter.fillRect(QRect(0, 0, 20, 20), col);
-        action->setIcon(QIcon(pixmap));
-        connect(action, SIGNAL(triggered(bool)), this, slot);
-        color_menu->addAction(action);
-        if (col == default_color) {
-            color_menu->setDefaultAction(action);
-        }
-    }
-
-    return color_menu;
+    */
 }
 
 // create buttons on the right
 // buttons manage which diagram element will be inserted
-void MainWindow::create_toolbox() {
+void MainWindow::create_toolbox()
+{
 
     // group of buttons which manage diagram elements
     item_buttons = new QButtonGroup(this);
@@ -222,14 +203,56 @@ void MainWindow::create_toolbox() {
     toolbox->setPalette(QPalette(col));
 }
 
-void MainWindow::create_menus() {
+void MainWindow::create_menus()
+{
     file_menu = menuBar()->addMenu(tr("&File"));
     file_menu->addAction(exit_action);
     about_menu = menuBar()->addMenu(tr("&Help"));
     about_menu->addAction(about_action);
 }
 
-QWidget *MainWindow::widget_layout(QLayout *layout) {
+QMenu *MainWindow::create_color_menu(const char *slot, QColor default_color)
+{
+    // colors and names
+    QList<QColor> colors;
+    colors << Qt::black << Qt::white << Qt::red << Qt::blue << Qt::green;
+    QStringList names;
+    names << tr("black") << tr("white") << tr("red") << tr("blue")
+          << tr("green");
+
+    // this must hold
+    assert(names.count() == colors.count());
+
+    // creating a menu
+    QMenu *color_menu = new QMenu(this);
+    for (int i = 0; i < colors.count(); i++) {
+        QColor col = colors.at(i);
+        // action which changes color of a button
+        QAction *action = new QAction(names.at(i), this);
+        action->setData(col);
+        action->setIcon(create_color_icon(col, 20));
+        connect(action, SIGNAL(triggered()), this, slot);
+        color_menu->addAction(action);
+        if (col == default_color) {
+            color_menu->setDefaultAction(action);
+        }
+    }
+
+    return color_menu;
+}
+
+QIcon MainWindow::create_color_icon(QColor color, int size)
+{
+    QPixmap pixmap(size, size);
+    pixmap.fill(color);
+    /*QPainter painter(&pixmap);
+    painter.setPen(Qt::NoPen);
+    painter.fillRect(QRect(0, 0, 20, 20), col);*/
+    return QIcon(pixmap);
+}
+
+QWidget *MainWindow::widget_layout(QLayout *layout)
+{
     QWidget *widget = new QWidget;
     widget->setLayout(layout);
     return widget;
@@ -258,7 +281,8 @@ MainWindow::create_cell_widget(const QString &text,
     return widget_layout(layout);
 }
 
-void MainWindow::keyPressEvent(QKeyEvent *event) {
+void MainWindow::keyPressEvent(QKeyEvent *event)
+{
     if (event->key() == Qt::Key_Escape) {
         clear_focus();
     }
@@ -281,11 +305,25 @@ void MainWindow::delete_item() {
 
 }
 
-void MainWindow::item_color_changed() {
-
+void MainWindow::item_color_changed()
+{
+    fill_action = qobject_cast<QAction *>(sender());
+    fill_color_button->setIcon(create_color_icon(qvariant_cast<QColor>(
+                                                     fill_action->data())));
+    fill_button_triggered();
 }
 
-void MainWindow::item_button_clicked(int id) {
+void MainWindow::fill_button_triggered()
+{
+    for (auto & item : canvas->selectedItems()) {
+        static_cast<FlowChartItem*>(item)->change_color(
+                    qvariant_cast<QColor>(fill_action->data()));
+    }
+    canvas->set_color(qvariant_cast<QColor>(fill_action->data()));
+}
+
+void MainWindow::item_button_clicked(int id)
+{
 
     // set down other buttons
     auto clicked_button = item_buttons->button(id);
