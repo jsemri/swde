@@ -13,15 +13,15 @@ TEMPLATE = app
 
 
 SOURCES +=   \
-        src/mainwindow.cpp \
-        src/main.cpp \
-    src/canvas.cpp \
-    src/flowchartitem.cpp \
-    src/debug.cpp
+        mainwindow.cpp \
+        main.cpp \
+    canvas.cpp \
+    flowchartitem.cpp \
+    debug.cpp
 
-HEADERS  += src/mainwindow.h \
-    src/canvas.h \
-    src/flowchartitem.h \
-    src/debug.h
+HEADERS  += mainwindow.h \
+   canvas.h \
+   flowchartitem.h \
+   debug.h
 
-FORMS    += src/mainwindow.ui
+FORMS    += mainwindow.ui
