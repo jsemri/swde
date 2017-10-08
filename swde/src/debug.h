@@ -2,6 +2,7 @@
 #define DEBUG_H
 
 #include <QDebug>
+#include <typeinfo>
 
 class Debug
 {
@@ -41,6 +42,7 @@ void Debug::debug(DebugLevel level, T first, Args... args) {
 }
 
 // used when entering to function
-#define ENTRY Debug::debug(Debug::high, "Entering:", __func__);
+#define ENTRY Debug::debug(Debug::high, "Class:", typeid(this).name(), \
+                           "Function:", __func__);
 
 #endif // DEBUG_H

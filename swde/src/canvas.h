@@ -35,8 +35,6 @@ private:
 public:
     explicit Canvas(QMenu *item_menu, QWidget *parrent=0);
 
-    void update_positions(const QRectF &rect);
-
 public slots:
     void set_mode(Mode m = MoveItem) { mode = m; }
     void set_color(QColor color) { item_color = color; }

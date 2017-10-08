@@ -15,11 +15,6 @@ Canvas::Canvas(QMenu *item_menu, QWidget *parrent) :
     setBackgroundBrush(Qt::white);
 }
 
-
-void Canvas::update_positions(const QRectF &rect) {
-    Q_UNUSED(rect);
-}
-
 void Canvas::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 
     ENTRY
@@ -27,7 +22,7 @@ void Canvas::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     FlowChartItem *item;
     switch (mode) {
         case InsertItem:
-            item = new FlowChartItem(item_type, item_color, item_menu);
+            item = new FlowChartItem(item_type, item_color, 0.5, item_menu);
             addItem(item);
             item->setPos(event->scenePos());
             break;
@@ -58,7 +53,7 @@ void Canvas::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
         QGraphicsScene::mouseReleaseEvent(event);
         if (active_item) {
             // set item back
-            active_item->setZValue(0);
+            static_cast<FlowChartItem*>(active_item)->set_old_zvalue();
             active_item = nullptr;
         }
     }

@@ -9,6 +9,8 @@
 #include <QFontComboBox>
 #include <QToolBar>
 #include <QKeyEvent>
+
+#include <algorithm>
 #include <cassert>
 
 #include "mainwindow.h"
@@ -88,10 +90,12 @@ void MainWindow::create_actions()
     to_front_action = new QAction(QIcon(":/images/tofront.png"),
                                   tr("To Front"), this);
     to_front_action->setStatusTip(tr("Move item to front."));
+    connect(to_front_action, SIGNAL(triggered()), this, SLOT(put_front()));
 
     to_back_action = new QAction(QIcon(":/images/toback.png"), tr("To Back"),
                                  this);
     to_back_action->setStatusTip(tr("Move item to back."));
+    connect(to_back_action, SIGNAL(triggered()), this, SLOT(put_back()));
 
     undo_action = new QAction(QIcon(":/images/undo.png"), tr("Undo"),
                               this);
@@ -166,7 +170,6 @@ void MainWindow::create_toolbars()
 // buttons manage which diagram element will be inserted
 void MainWindow::create_toolbox()
 {
-
     // group of buttons which manage diagram elements
     item_buttons = new QButtonGroup(this);
     item_buttons->setExclusive(false);
@@ -188,8 +191,6 @@ void MainWindow::create_toolbox()
     text_layout->addWidget(new QLabel(tr("Text")),1 ,0 , Qt::AlignCenter);
 
     gl->addWidget(widget_layout(text_layout), 2, 0);
-//Qt::Align
-    // XXX add more
     gl->setRowStretch(3, 10);
     gl->setColumnStretch(2, 10);
     QWidget *widget = widget_layout(gl);
@@ -199,8 +200,9 @@ void MainWindow::create_toolbox()
                                        QSizePolicy::Ignored));
     toolbox->setMinimumWidth(widget->sizeHint().width());
     toolbox->addItem(widget, tr("afsd"));
-    QColor col(168, 136, 7);
+    QColor col(3, 146, 13);
     toolbox->setPalette(QPalette(col));
+    toolbox->setFrameShape(QFrame::WinPanel);
 }
 
 void MainWindow::create_menus()
@@ -245,9 +247,6 @@ QIcon MainWindow::create_color_icon(QColor color, int size)
 {
     QPixmap pixmap(size, size);
     pixmap.fill(color);
-    /*QPainter painter(&pixmap);
-    painter.setPen(Qt::NoPen);
-    painter.fillRect(QRect(0, 0, 20, 20), col);*/
     return QIcon(pixmap);
 }
 
@@ -263,7 +262,7 @@ QWidget *
 MainWindow::create_cell_widget(const QString &text,
                                FlowChartItem::FlowChartItemType type)
 {
-    FlowChartItem item(type, Qt::white, edit_menu);
+    FlowChartItem item(type, Qt::white, 1, edit_menu);
     QIcon icon(item.image());
 
     //QToolButton *button = new QToolButton;
@@ -302,7 +301,37 @@ void MainWindow::about() {
 }
 
 void MainWindow::delete_item() {
+    for (auto & item : canvas->selectedItems()) {
+        canvas->removeItem(item);
+    }
+}
 
+void MainWindow::put_front() {
+    qreal zmax = -0.1;
+    for (auto &i : canvas->items()) {
+        if (zmax < i->zValue()) {
+            zmax = i->zValue();
+        }
+    }
+    zmax += 0.1;
+
+    for (auto & item : canvas->selectedItems()) {
+        static_cast<FlowChartItem*>(item)->set_zvalue(zmax);
+    }
+}
+
+void MainWindow::put_back() {
+    qreal zmin = 0.1;
+    for (auto &i : canvas->items()) {
+        if (zmin > i->zValue()) {
+            zmin = i->zValue();
+        }
+    }
+    zmin -= 0.1;
+
+    for (auto & item : canvas->selectedItems()) {
+        static_cast<FlowChartItem*>(item)->set_zvalue(zmin);
+    }
 }
 
 void MainWindow::item_color_changed()
@@ -324,7 +353,6 @@ void MainWindow::fill_button_triggered()
 
 void MainWindow::item_button_clicked(int id)
 {
-
     // set down other buttons
     auto clicked_button = item_buttons->button(id);
     for (auto &button : item_buttons->buttons()) {
@@ -358,8 +386,10 @@ void MainWindow::scale_changed(const QString &scale) {
 }
 
 void MainWindow::clear_focus() {
+    canvas->clearSelection();
     for (auto & but : item_buttons->buttons()) {
         but->setChecked(false);
         canvas->set_mode();
     }
+    clearFocus();
 }

@@ -85,6 +85,7 @@ private:
     void create_menus();
 
     static QWidget *widget_layout(QLayout *layout);
+    static QIcon create_color_icon(QColor color = Qt::white, int size = 35);
 
     QWidget *
     create_bg_cell_widget(const QString &text, const QString &image);
@@ -93,7 +94,7 @@ private:
                        FlowChartItem::FlowChartItemType type);
 
     QMenu *create_color_menu(const char *slot, QColor default_color=Qt::white);
-    QIcon create_color_icon(QColor color = Qt::white, int size = 35);
+
 
     void keyPressEvent(QKeyEvent *event) override;
 
@@ -101,6 +102,8 @@ private slots:
     void about();
     void undo();
     void delete_item();
+    void put_front();
+    void put_back();
     void item_button_clicked(int id);
     void item_color_changed();
     void scale_changed(const QString &scale);
