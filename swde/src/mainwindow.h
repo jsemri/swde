@@ -40,7 +40,7 @@ private:
     // top bar
     QToolBar *toolbar;
     QToolBar *edit_toolbar;
-    QToolBar *font_toolbar;
+    QToolBar *text_toolbar;
     QToolBar *item_toolbar;
 
     QComboBox *scale_combo;
@@ -71,6 +71,10 @@ private:
 
     QAction *clear_focus_action;
     QAction *fill_action;
+
+    QAction *bold_action;
+    QAction *underline_action;
+    QAction *italic_action;
 
     Ui::MainWindow *ui;
 

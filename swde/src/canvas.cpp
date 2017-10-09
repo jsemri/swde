@@ -11,7 +11,6 @@ Canvas::Canvas(QMenu *item_menu, QWidget *parrent) :
     mode{MoveItem}, item_type{FlowChartItem::None}, item_color{Qt::white},
     active_item{nullptr}
 {
-    setSceneRect(QRectF(0, 0, 400, 400));
     setBackgroundBrush(Qt::white);
 }
 

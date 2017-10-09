@@ -9,6 +9,7 @@
 #include <QFontComboBox>
 #include <QToolBar>
 #include <QKeyEvent>
+#include <QDesktopWidget>
 
 #include <algorithm>
 #include <cassert>
@@ -32,14 +33,15 @@ MainWindow::MainWindow(QWidget *parent) :
     create_toolbox();
 
     canvas = new Canvas(edit_menu, this);
-    //connect(canvas, SIGNAL(item_inserted()))
+
     view = new QGraphicsView(canvas);
+    view->setSceneRect(0, 0, 1000, 1000);
+    view->fitInView(0, 0, 500, 400, Qt::KeepAspectRatio);
     view->setDragMode(QGraphicsView::NoDrag);
     view->setCacheMode(QGraphicsView::CacheBackground);
     view->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
     view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-    view->fitInView(0, 0, 400, 400, Qt::KeepAspectRatio);
     view->setEnabled(true);
 
     layout = new QHBoxLayout();
@@ -47,9 +49,10 @@ MainWindow::MainWindow(QWidget *parent) :
     layout->addWidget(view);
     setCentralWidget(widget_layout(layout));
     create_toolbars();
-
     setWindowIcon(QIcon(":/images/swde.png"));
     setWindowTitle("Simple Workflow Diagram Editor");
+    setMinimumSize(1000, 600);
+    setGeometry(qApp->desktop()->availableGeometry());
 }
 
 MainWindow::~MainWindow()
@@ -103,6 +106,12 @@ void MainWindow::create_actions()
     undo_action->setStatusTip(tr("Undo current action."));
     undo_action->setChecked(false);
     connect(undo_action, SIGNAL(triggered()), this, SLOT(undo()));
+
+    bold_action = new QAction(QIcon(":/images/bold.png"), tr("Bold"), this);
+    underline_action = new QAction(QIcon(":/images/underline.png"), tr("Underline"),
+                                   this);
+    italic_action = new QAction(QIcon(":/images/italic.png"), tr("Italic"),
+                                this);
 }
 
 void MainWindow::create_toolbars()
@@ -141,14 +150,12 @@ void MainWindow::create_toolbars()
     item_toolbar = addToolBar(tr("Color"));
     item_toolbar->addWidget(fill_color_button);
 
-
-
     // @@@@@@@@@@@@@@@@@@@@@@
     // font and text buttons
     // @@@@@@@@@@@@@@@@@@@@@@
-    /*
     font_combo = new QFontComboBox;
-    // XXX connect to change font
+
+
     font_size_combo = new QComboBox;
     font_size_combo->setEditable(true);
     for (int i = 8; i < 32; i += 2) {
@@ -161,9 +168,12 @@ void MainWindow::create_toolbars()
     font_color_button->setPopupMode(QToolButton::MenuButtonPopup);
     font_color_button->setMenu(create_color_menu(SLOT(item_color_changed())));
     //fill_color_button->setIcon(te));
-    font_toolbar = addToolBar(tr("Font"));
-    font_toolbar->addWidget(font_color_button);
-    */
+    text_toolbar = addToolBar(tr("Font"));
+    text_toolbar->addWidget(font_size_combo);
+    text_toolbar->addWidget(font_combo);
+    text_toolbar->addAction(bold_action);
+    text_toolbar->addAction(italic_action);
+    text_toolbar->addAction(underline_action);
 }
 
 // create buttons on the right
