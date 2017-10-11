@@ -9,7 +9,7 @@ public:
     // identification used for graphic scene
     enum {Type = UserType + 36};
     // possible shapes
-    enum FlowChartItemType {Process, Condition, None};
+    enum FlowChartItemType {Process, Condition, Text, None};
 
 private:
     FlowChartItemType item_type;
@@ -28,10 +28,10 @@ public:
     QPolygonF polygon() const { return polyg; }
     int type() const override { return Type; }
     QPixmap image() const;
-
+/*
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
-
+*/
 protected:
     void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) override;
 

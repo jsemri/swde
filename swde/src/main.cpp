@@ -3,7 +3,8 @@
 #include "debug.h"
 
 // goals:
-//      menu theme, scene fixed size
+//      don't let items go beyond scene border
+//      style
 //      arrows and lines
 //      text insertion
 //      advanced oprations: export, undo, etc.

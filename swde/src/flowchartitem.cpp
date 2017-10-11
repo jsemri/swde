@@ -38,6 +38,7 @@ FlowChartItem::FlowChartItem
     setFlag(QGraphicsItem::ItemIsMovable, true);
     setFlag(QGraphicsItem::ItemIsSelectable, true);
     setFlag(QGraphicsItem::ItemSendsGeometryChanges, true);
+    this->setSelected(false);
 }
 
 
@@ -74,7 +75,7 @@ FlowChartItem::itemChange(GraphicsItemChange change, const QVariant &value)
 
     return value;
 }
-
+/*
 void FlowChartItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     ENTRY
@@ -96,7 +97,7 @@ void FlowChartItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         pointer_pos = current_pos;
     }
 }
-
+*/
 void FlowChartItem::change_color(QColor color) {
     // change color and set brush gradient
     QRadialGradient gradient(QPointF(0,0), 250*size);
