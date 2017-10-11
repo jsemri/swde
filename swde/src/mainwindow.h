@@ -15,10 +15,10 @@ class QToolButton;
 class QFontComboBox;
 class QGraphicsTextItem;
 class QGraphicsItem;
-
+/*
 namespace Ui {
 class MainWindow;
-}
+}*/
 
 class MainWindow : public QMainWindow
 {
@@ -30,45 +30,47 @@ private:
     Canvas *canvas;
 
     // top menus
-    QMenu *file_menu;
-    QMenu *edit_menu;
+    QMenu *fileMenu;
+    QMenu *editMenu;
 
     // bottom bar
     QToolBox *toolbox;
-    QButtonGroup *item_buttons;
-    QButtonGroup *background_buttons;
+    QButtonGroup *itemButtons;
+    QButtonGroup *backgroundButtons;
 
     // top bar
     QToolBar *toolbar;
-    QToolBar *edit_toolbar;
-    QToolBar *text_toolbar;
-    QToolBar *item_toolbar;
+    QToolBar *editToolbar;
+    QToolBar *textToolbar;
+    QToolBar *itemToolbar;
 
     // actions
-    QAction *exit_action;
-    Ui::MainWindow *ui;
+    QAction *exitAction;
+    //Ui::MainWindow *ui;
 
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
 private:
-    void create_actions();
-    void create_toolbox();
-    void create_menus();
+    void createActions();
+    void createToolbox();
+    void createMenus();
 
-    static QWidget *widget_layout(QLayout *layout);
+    static QWidget *widgetLayout(QLayout *layout);
 
     QWidget *
-    create_cell_widget(const QString &text,
+    createCellWidget(const QString &text,
                        FlowChartItem::FlowChartItemType type);
 
     void keyPressEvent(QKeyEvent *event) override;
 
 private slots:
-    void item_button_clicked(int id);
+    void itemButtonClicked(int id);
     void textInserted(QGraphicsTextItem *item);
+    void itemInserted(FlowChartItem *item);
     void itemSelected(QGraphicsItem *item);
+    void arrowInserted();
 };
 
 #endif // MAINWINDOW_H

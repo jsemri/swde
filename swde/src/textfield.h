@@ -18,7 +18,7 @@ public:
     TextField(QGraphicsItem *parent = 0);
     int type() const override {return Type;}
 signals:
-    void lostFocus(TextField *text_field);
+    void lostFocus(TextField *textField);
     void selectedChange(QGraphicsItem *item);
 
 private:

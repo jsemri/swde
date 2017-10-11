@@ -4,35 +4,39 @@
 #include <QRect>
 #include <QDebug>
 #include <QTextCursor>
-#include "debug.h"
+
+#include "arrow.h"
 #include "canvas.h"
 #include "textfield.h"
 
-Canvas::Canvas(QMenu *item_menu, QWidget *parrent) :
-    QGraphicsScene{parrent}, item_menu{item_menu},
-    mode{MoveItem}, item_type{FlowChartItem::None}, item_color{Qt::white},
-    active_item{nullptr}
+Canvas::Canvas(QMenu *itemMenu, QWidget *parrent) :
+    QGraphicsScene{parrent}, itemMenu{itemMenu},
+    mode{MoveItem}, itemType{FlowChartItem::None},
+    activeItem{nullptr}
 {
     setBackgroundBrush(Qt::white);
 }
 
 void Canvas::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 
-    ENTRY
-
     FlowChartItem *item;
     TextField *text;
     switch (mode) {
         case InsertItem:
             qDebug() << "inserting item";
-            item = new FlowChartItem(item_type, item_color, 0.5, item_menu);
+            item = new FlowChartItem(itemType, Qt::white, 0.5, itemMenu);
             addItem(item);
             item->setPos(event->scenePos());
+            emit itemInserted(item);
             break;
         case MoveItem:
             qDebug() << "moving item";
-            active_item = itemAt(event->scenePos(), QTransform());
+            activeItem = itemAt(event->scenePos(), QTransform());
+            //QGraphicsScene::mousePressEvent(event);
             QGraphicsScene::mousePressEvent(event);
+            break;
+        case InsertLine:
+            startArrowPoint = event->scenePos();
             break;
         case InsertText:
             qDebug() << "inserting text";
@@ -40,7 +44,6 @@ void Canvas::mousePressEvent(QGraphicsSceneMouseEvent *event) {
             text->setZValue(1001);
             //text->setFont(QFont::Normal);
             text->setTextInteractionFlags(Qt::TextEditorInteraction);
-            text->setPlainText(QString("asd"));
             addItem(text);
             text->setPos(event->scenePos());
             text->setDefaultTextColor(Qt::black);
@@ -49,18 +52,17 @@ void Canvas::mousePressEvent(QGraphicsSceneMouseEvent *event) {
             connect(text, SIGNAL(selectedChange(QGraphicsItem*)), this,
                     SIGNAL(itemSelected(QGraphicsItem*)));
             emit textInserted(text);
+            QGraphicsScene::mousePressEvent(event);
         default:
             ;
     };
-    QGraphicsScene::mousePressEvent(event);
+
 }
 
 void Canvas::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
 
-    ENTRY
-
     if (mode == MoveItem) {
-        if (active_item) {
+        if (activeItem) {
             QGraphicsScene::mouseMoveEvent(event);
         }
     }
@@ -68,15 +70,15 @@ void Canvas::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
 
 void Canvas::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
 
-    ENTRY
-
     if (mode == MoveItem) {
         QGraphicsScene::mouseReleaseEvent(event);
-        if (active_item) {
-            // set item back
-            static_cast<FlowChartItem*>(active_item)->set_old_zvalue();
-            active_item = nullptr;
-        }
+    }
+    else if (mode == InsertLine) {
+        Arrow *arrow = new Arrow;
+        addItem(arrow);
+        QLineF line(startArrowPoint, event->scenePos());
+        arrow->setLine(line);
+        emit arrowInserted();
     }
 }
 

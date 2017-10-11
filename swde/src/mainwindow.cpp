@@ -10,6 +10,10 @@
 #include <QToolBar>
 #include <QKeyEvent>
 #include <QDesktopWidget>
+#include <QAction>
+#include <QButtonGroup>
+#include <QMenuBar>
+#include <QMenu>
 
 #include <algorithm>
 #include <cassert>
@@ -17,24 +21,27 @@
 #include "mainwindow.h"
 #include "canvas.h"
 #include "flowchartitem.h"
-#include "debug.h"
-
-#include "ui_mainwindow.h"
 
 #define ICON_SIZE 35
 
 MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow)
+    QMainWindow(parent)
+    //ui(new Ui::MainWindow)
 {
-    ui->setupUi(this);
-    create_actions();
-    create_menus();
-    create_toolbox();
+    //ui->setupUi(this);
+    createActions();
+    createMenus();
+    createToolbox();
 
-    canvas = new Canvas(edit_menu, this);
+    canvas = new Canvas(editMenu, this);
     connect(canvas, SIGNAL(textInserted(QGraphicsTextItem*)), this,
             SLOT(textInserted(QGraphicsTextItem*)));
+    connect(canvas, SIGNAL(itemInserted(FlowChartItem*)), this,
+            SLOT(itemInserted(FlowChartItem*)));
+    connect(canvas, SIGNAL(itemSelected(QGraphicsItem*)), this,
+            SLOT(itemSelected(QGraphicsItem*)));
+    connect(canvas, SIGNAL(arrowInserted(void)), this,
+            SLOT(arrowInserted(void)));
 
     view = new QGraphicsView(canvas);
     view->setSceneRect(0, 0, 1000, 1000);
@@ -49,7 +56,7 @@ MainWindow::MainWindow(QWidget *parent) :
     layout = new QHBoxLayout();
     layout->addWidget(toolbox);
     layout->addWidget(view);
-    setCentralWidget(widget_layout(layout));
+    setCentralWidget(widgetLayout(layout));
     setWindowIcon(QIcon(":/images/swde.png"));
     setWindowTitle("Simple Workflow Diagram Editor");
     setMinimumSize(600, 400);
@@ -58,43 +65,43 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-    delete ui;
+
 }
 
-void MainWindow::create_actions()
+void MainWindow::createActions()
 {
-    exit_action = new QAction(tr("E&xit"), this);
-    connect(exit_action, SIGNAL(triggered()), this, SLOT(close()));
+    exitAction = new QAction(tr("E&xit"), this);
+    connect(exitAction, SIGNAL(triggered()), this, SLOT(close()));
 }
 
 // create buttons on the right
 // buttons manage which diagram element will be inserted
-void MainWindow::create_toolbox()
+void MainWindow::createToolbox()
 {
     // group of buttons which manage diagram elements
-    item_buttons = new QButtonGroup(this);
-    item_buttons->setExclusive(false);
-    connect(item_buttons, SIGNAL(buttonClicked(int)), this,
-            SLOT(item_button_clicked(int)));
+    itemButtons = new QButtonGroup(this);
+    itemButtons->setExclusive(false);
+    connect(itemButtons, SIGNAL(buttonClicked(int)), this,
+            SLOT(itemButtonClicked(int)));
 
     QGridLayout *gl = new QGridLayout;
-    gl->addWidget(create_cell_widget(tr("Process"), FlowChartItem::Process),
+    gl->addWidget(createCellWidget(tr("Process"), FlowChartItem::Process),
                   0, 0);
-    gl->addWidget(create_cell_widget(tr("Conditional"), FlowChartItem::Condition),
+    gl->addWidget(createCellWidget(tr("Conditional"), FlowChartItem::Condition),
                   0, 1);
 
-    QToolButton *text_button = new QToolButton;
-    text_button->setCheckable(true);
-    text_button->setIconSize(QSize(ICON_SIZE, ICON_SIZE));
-    item_buttons->addButton(text_button, FlowChartItem::Text);
-    QGridLayout *text_layout = new QGridLayout;
-    text_layout->addWidget(text_button, 0, 0, Qt::AlignCenter);
-    text_layout->addWidget(new QLabel(tr("Text")),1 ,0 , Qt::AlignCenter);
+    QToolButton *textButton = new QToolButton;
+    textButton->setCheckable(true);
+    textButton->setIconSize(QSize(ICON_SIZE, ICON_SIZE));
+    itemButtons->addButton(textButton, FlowChartItem::Text);
+    QGridLayout *textLayout = new QGridLayout;
+    textLayout->addWidget(textButton, 0, 0, Qt::AlignCenter);
+    textLayout->addWidget(new QLabel(tr("Text")),1 ,0 , Qt::AlignCenter);
 
-    gl->addWidget(widget_layout(text_layout), 2, 0);
+    gl->addWidget(widgetLayout(textLayout), 2, 0);
     gl->setRowStretch(3, 10);
     gl->setColumnStretch(2, 10);
-    QWidget *widget = widget_layout(gl);
+    QWidget *widget = widgetLayout(gl);
 
     toolbox = new QToolBox();
     toolbox->setSizePolicy(QSizePolicy(QSizePolicy::Maximum,
@@ -106,13 +113,13 @@ void MainWindow::create_toolbox()
     toolbox->setFrameShape(QFrame::WinPanel);
 }
 
-void MainWindow::create_menus()
+void MainWindow::createMenus()
 {
-    file_menu = menuBar()->addMenu(tr("&File"));
-    file_menu->addAction(exit_action);
+    fileMenu = menuBar()->addMenu(tr("&File"));
+    fileMenu->addAction(exitAction);
 }
 
-QWidget *MainWindow::widget_layout(QLayout *layout)
+QWidget *MainWindow::widgetLayout(QLayout *layout)
 {
     QWidget *widget = new QWidget;
     widget->setLayout(layout);
@@ -121,10 +128,11 @@ QWidget *MainWindow::widget_layout(QLayout *layout)
 
 // create button with item insertion
 QWidget *
-MainWindow::create_cell_widget(const QString &text,
-                               FlowChartItem::FlowChartItemType type)
+MainWindow::createCellWidget(
+        const QString &text,
+        FlowChartItem::FlowChartItemType type)
 {
-    FlowChartItem item(type, Qt::white, 1, edit_menu);
+    FlowChartItem item(type, Qt::white, 1, editMenu);
     QIcon icon(item.image());
 
     //QToolButton *button = new QToolButton;
@@ -132,23 +140,23 @@ MainWindow::create_cell_widget(const QString &text,
     button->setIcon(icon);
     button->setIconSize(QSize(ICON_SIZE, ICON_SIZE));
     button->setCheckable(true);
-    item_buttons->addButton(button, int(type));
+    itemButtons->addButton(button, int(type));
 
     QGridLayout *layout = new QGridLayout;
     //layout->addWidget(button);
     layout->addWidget(button, 0, 0, Qt::AlignHCenter);
     layout->addWidget(new QLabel(text), 1, 0, Qt::AlignCenter);
 
-    return widget_layout(layout);
+    return widgetLayout(layout);
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_Escape) {
         canvas->clearSelection();
-        for (auto & but : item_buttons->buttons()) {
+        for (auto & but : itemButtons->buttons()) {
             but->setChecked(false);
-            canvas->set_mode();
+            canvas->setMode();
         }
         clearFocus();
     }
@@ -159,38 +167,52 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 // slot methods implementation
 // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-void MainWindow::item_button_clicked(int id)
+void MainWindow::itemButtonClicked(int id)
 {
     // set down other buttons
-    auto clicked_button = item_buttons->button(id);
-    for (auto &button : item_buttons->buttons()) {
-        if (clicked_button != button) {
+    auto clickedButton = itemButtons->button(id);
+    for (auto &button : itemButtons->buttons()) {
+        if (clickedButton != button) {
             button->setChecked(false);
         }
     }
 
-    if (!clicked_button->isChecked()) {
+    if (!clickedButton->isChecked()) {
         // button is disabled - disble inserting mode
-        canvas->set_mode(Canvas::MoveItem);
+        canvas->setMode(Canvas::MoveItem);
     }
     else if (FlowChartItem::FlowChartItemType(id) == FlowChartItem::None) {
         // enable text insertion
-        canvas->set_mode(Canvas::MoveItem);
+        canvas->setMode(Canvas::MoveItem);
     }
     else if (FlowChartItem::FlowChartItemType(id) == FlowChartItem::Text) {
-        canvas->set_mode(Canvas::InsertText);
+        canvas->setMode(Canvas::InsertText);
+    }
+    else if (FlowChartItem::FlowChartItemType(id) == FlowChartItem::Line) {
+        canvas->setMode(Canvas::InsertLine);
     }
     else {
         // button is enabled now - enable item insertion
-        canvas->set_mode(Canvas::InsertItem);
-        canvas->set_item_type(FlowChartItem::FlowChartItemType(id));
+        canvas->setMode(Canvas::InsertItem);
+        canvas->setItemType(FlowChartItem::FlowChartItemType(id));
     }
 }
 
 void MainWindow::textInserted(QGraphicsTextItem *item) {
     qDebug() << "text inserted";
+    canvas->setMode();
+    itemButtons->button(FlowChartItem::Text)->setChecked(false);
 }
 
 void MainWindow::itemSelected(QGraphicsItem *item) {
     qDebug() << "item selected";
+}
+
+void MainWindow::itemInserted(FlowChartItem *item) {
+  /*  canvas->setMode();
+    itemButtons->button(int(item->getType()))->setChecked(false);*/
+}
+
+void MainWindow::arrowInserted() {
+
 }

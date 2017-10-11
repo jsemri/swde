@@ -9,29 +9,24 @@ public:
     // identification used for graphic scene
     enum {Type = UserType + 36};
     // possible shapes
-    enum FlowChartItemType {Process, Condition, Text, None};
+    enum FlowChartItemType {Process, Condition, Text, Line, None};
 
 private:
-    FlowChartItemType item_type;
+    FlowChartItemType itemType;
     QPolygonF polyg;
     qreal size;
-    QMenu *context_menu;
-    QPointF pointer_pos;
-    qreal old_zvalue;
+    QMenu *contextMenu;
 
 public:
     FlowChartItem
-    (FlowChartItemType type, QColor color, qreal size, QMenu *context_menu,
+    (FlowChartItemType type, QColor color, qreal size, QMenu *contextMenu,
      QGraphicsItem *parent = 0);
 
-    FlowChartItemType get_type() const { return item_type; }
+    FlowChartItemType getType() const { return itemType; }
     QPolygonF polygon() const { return polyg; }
     int type() const override { return Type; }
     QPixmap image() const;
-/*
-    void mousePressEvent(QGraphicsSceneMouseEvent *event);
-    void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
-*/
+
 protected:
     void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) override;
 
@@ -39,14 +34,7 @@ protected:
     itemChange(GraphicsItemChange change, const QVariant &value) override;
 
 public:
-    void change_color(QColor color);
-    void change_size(qreal s);
-    void set_zvalue(qreal value) { old_zvalue = zValue(); setZValue(value); }
-    void set_old_zvalue() { set_zvalue(old_zvalue); }
-
-signals:
-
-public slots:
+    void changeColor(QColor color);
 };
 
 #endif // FLOWCHARTITEM_H

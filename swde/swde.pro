@@ -17,14 +17,14 @@ SOURCES +=   \
         src/main.cpp \
     src/canvas.cpp \
     src/flowchartitem.cpp \
-    src/debug.cpp \
-    src/textfield.cpp
+    src/textfield.cpp \
+    src/line.cpp
 
 HEADERS  += src/mainwindow.h \
    src/canvas.h \
    src/flowchartitem.h \
-   src/debug.h \
-    src/textfield.h
+    src/textfield.h \
+    src/line.h
 
 RESOURCES += images.qrc
 
