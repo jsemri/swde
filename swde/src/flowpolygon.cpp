@@ -4,45 +4,54 @@
 #include <QPainter>
 #include <QDebug>
 
-
 #include "canvas.h"
-#include "flowchartitem.h"
+#include "flowpolygon.h"
 
-FlowChartItem::FlowChartItem
-(FlowChartItemType type, QColor color, qreal size, QMenu *contextMenu,
+FlowPolygon::FlowPolygon
+(FlowItem::Type type, QColor color, qreal size, QMenu *contextMenu,
  QGraphicsItem *parent) :
-    QGraphicsPolygonItem(parent), itemType{type}, size{size},
+    QGraphicsPolygonItem(parent), FlowItem{}, itemType{type}, size{size},
     contextMenu{contextMenu}
 {
+    QPainterPath path;
     switch (type) {
-        case Condition:
+        case FlowItem::Type::Decision:
             polyg << QPointF(-100*size, 0) << QPointF(0, 100*size)
                   << QPointF(100*size, 0) << QPointF(0, -100*size)
                   << QPointF(-100*size, 0);
             break;
-        case Process:
+        case FlowItem::Type::Process:
             polyg << QPointF(-100*size, -100*size)
                   << QPointF(100*size, -100*size)
                   << QPointF(100*size, 100*size)
                   << QPointF(-100*size, 100*size)
                   << QPointF(-100*size, -100*size);
             break;
-        default:
+        case FlowItem::Type::Terminal:
+            path.moveTo(200, 50);
+            path.arcTo(150, 0, 50, 50, 0, 90);
+            path.arcTo(50, 0, 50, 50, 90, 90);
+            path.arcTo(50, 50, 50, 50, 180, 90);
+            path.arcTo(150, 50, 50, 50, 270, 90);
+            path.lineTo(200, 25);
+            polyg = path.toFillPolygon();
+            break;
+        case FlowItem::Type::IO:
             polyg << QPointF(-120*size, -80*size) << QPointF(-70*size, 80*size)
                   << QPointF(120*size, 80*size) << QPointF(70*size, -80*size)
                   << QPointF(-120*size, -80*size);
-            break;
+        default:
+            ;
     }
     setPolygon(polyg);
     changeColor(color);
     setFlag(QGraphicsItem::ItemIsMovable);
     setFlag(QGraphicsItem::ItemIsSelectable);
     setFlag(QGraphicsItem::ItemSendsGeometryChanges);
-    //this->setSelected(false);
 }
 
 
-QPixmap FlowChartItem::image() const
+QPixmap FlowPolygon::image() const
 {
     // just output the item image, used for creating buttons
     QPixmap pixmap(250, 250);
@@ -55,15 +64,18 @@ QPixmap FlowChartItem::image() const
     return pixmap;
 }
 
-void FlowChartItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
+void FlowPolygon::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 {
+    qDebug() << "context menu event";
+    return;
+    // right click ~-~-~-> edit
     scene()->clearSelection();
     setSelected(true);
     contextMenu->exec(event->screenPos());
 }
 
 QVariant
-FlowChartItem::itemChange(GraphicsItemChange change, const QVariant &value)
+FlowPolygon::itemChange(GraphicsItemChange change, const QVariant &value)
 {
     if (change == QGraphicsItem::ItemPositionChange) {
 
@@ -72,7 +84,7 @@ FlowChartItem::itemChange(GraphicsItemChange change, const QVariant &value)
     return value;
 }
 
-void FlowChartItem::changeColor(QColor color) {
+void FlowPolygon::changeColor(QColor color) {
     // change color and set brush gradient
     QRadialGradient gradient(QPointF(0,0), 250*size);
     gradient.setColorAt(0, color);

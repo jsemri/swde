@@ -5,13 +5,13 @@
 #include <QDebug>
 #include <QTextCursor>
 
-#include "arrow.h"
+#include "flowline.h"
 #include "canvas.h"
 #include "textfield.h"
 
 Canvas::Canvas(QMenu *itemMenu, QWidget *parrent) :
     QGraphicsScene{parrent}, itemMenu{itemMenu},
-    mode{MoveItem}, itemType{FlowChartItem::None},
+    mode{MoveItem}, itemType{FlowItem::Type::None},
     activeItem{nullptr}
 {
     setBackgroundBrush(Qt::white);
@@ -19,12 +19,12 @@ Canvas::Canvas(QMenu *itemMenu, QWidget *parrent) :
 
 void Canvas::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 
-    FlowChartItem *item;
+    FlowPolygon *item;
     TextField *text;
     switch (mode) {
         case InsertItem:
             qDebug() << "inserting item";
-            item = new FlowChartItem(itemType, Qt::white, 0.5, itemMenu);
+            item = new FlowPolygon(itemType, Qt::white, 0.5, itemMenu);
             addItem(item);
             item->setPos(event->scenePos());
             emit itemInserted(item);
@@ -32,11 +32,12 @@ void Canvas::mousePressEvent(QGraphicsSceneMouseEvent *event) {
         case MoveItem:
             qDebug() << "moving item";
             activeItem = itemAt(event->scenePos(), QTransform());
-            //QGraphicsScene::mousePressEvent(event);
             QGraphicsScene::mousePressEvent(event);
             break;
         case InsertLine:
-            startArrowPoint = event->scenePos();
+            qDebug() << "inserting line";
+            arrow = new FlowLine(event->scenePos(),event->scenePos());
+            addItem(arrow);
             break;
         case InsertText:
             qDebug() << "inserting text";
@@ -53,8 +54,9 @@ void Canvas::mousePressEvent(QGraphicsSceneMouseEvent *event) {
                     SIGNAL(itemSelected(QGraphicsItem*)));
             emit textInserted(text);
             QGraphicsScene::mousePressEvent(event);
+            break;
         default:
-            ;
+            qDebug() << "undefined operation";
     };
 
 }
@@ -66,6 +68,10 @@ void Canvas::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
             QGraphicsScene::mouseMoveEvent(event);
         }
     }
+    else if (mode == InsertLine && arrow) {
+        arrow->setEndPoint(event->scenePos());
+        arrow->update();
+    }
 }
 
 void Canvas::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
@@ -74,12 +80,12 @@ void Canvas::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
         QGraphicsScene::mouseReleaseEvent(event);
     }
     else if (mode == InsertLine) {
-        Arrow *arrow = new Arrow;
-        addItem(arrow);
-        QLineF line(startArrowPoint, event->scenePos());
-        arrow->setLine(line);
+        //arrow->setEndPoint(event->scenePos());
+        arrow = 0;
         emit arrowInserted();
+        QGraphicsScene::mouseReleaseEvent(event);
     }
+    //QGraphicsScene::mouseReleaseEvent(event);
 }
 
 void Canvas::editorLostFocus(TextField *item) {

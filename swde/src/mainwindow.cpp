@@ -18,11 +18,15 @@
 #include <algorithm>
 #include <cassert>
 
+#include "flowitem.h"
 #include "mainwindow.h"
 #include "canvas.h"
-#include "flowchartitem.h"
+#include "flowpolygon.h"
+#include "flowline.h"
+#include "textfield.h"
 
-#define ICON_SIZE 35
+#define ICON_X 80
+#define ICON_Y 60
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent)
@@ -36,8 +40,8 @@ MainWindow::MainWindow(QWidget *parent) :
     canvas = new Canvas(editMenu, this);
     connect(canvas, SIGNAL(textInserted(QGraphicsTextItem*)), this,
             SLOT(textInserted(QGraphicsTextItem*)));
-    connect(canvas, SIGNAL(itemInserted(FlowChartItem*)), this,
-            SLOT(itemInserted(FlowChartItem*)));
+    connect(canvas, SIGNAL(itemInserted(FlowPolygon*)), this,
+            SLOT(itemInserted(FlowPolygon*)));
     connect(canvas, SIGNAL(itemSelected(QGraphicsItem*)), this,
             SLOT(itemSelected(QGraphicsItem*)));
     connect(canvas, SIGNAL(arrowInserted(void)), this,
@@ -84,24 +88,15 @@ void MainWindow::createToolbox()
     connect(itemButtons, SIGNAL(buttonClicked(int)), this,
             SLOT(itemButtonClicked(int)));
 
-    QGridLayout *gl = new QGridLayout;
-    gl->addWidget(createCellWidget(tr("Process"), FlowChartItem::Process),
-                  0, 0);
-    gl->addWidget(createCellWidget(tr("Conditional"), FlowChartItem::Condition),
-                  0, 1);
-
-    QToolButton *textButton = new QToolButton;
-    textButton->setCheckable(true);
-    textButton->setIconSize(QSize(ICON_SIZE, ICON_SIZE));
-    itemButtons->addButton(textButton, FlowChartItem::Text);
-    QGridLayout *textLayout = new QGridLayout;
-    textLayout->addWidget(textButton, 0, 0, Qt::AlignCenter);
-    textLayout->addWidget(new QLabel(tr("Text")),1 ,0 , Qt::AlignCenter);
-
-    gl->addWidget(widgetLayout(textLayout), 2, 0);
-    gl->setRowStretch(3, 10);
-    gl->setColumnStretch(2, 10);
-    QWidget *widget = widgetLayout(gl);
+    QGridLayout *tbLayout = new QGridLayout;
+    QMapIterator<FlowItem::Type, QString> it(FlowItem::tips);
+    while (it.hasNext()) {
+        it.next();
+        createItemButton(tbLayout, it.key(), it.value());
+    }
+    //tbLayout->setColumnStretch(2, 10);
+    tbLayout->setColumnMinimumWidth(0, 1.678 * ICON_X);
+    QWidget *widget = widgetLayout(tbLayout);
 
     toolbox = new QToolBox();
     toolbox->setSizePolicy(QSizePolicy(QSizePolicy::Maximum,
@@ -126,28 +121,36 @@ QWidget *MainWindow::widgetLayout(QLayout *layout)
     return widget;
 }
 
-// create button with item insertion
-QWidget *
-MainWindow::createCellWidget(
-        const QString &text,
-        FlowChartItem::FlowChartItemType type)
+void MainWindow::createItemButton(QGridLayout *gLayout, FlowItem::Type type,
+                                  QString statusTip)
 {
-    FlowChartItem item(type, Qt::white, 1, editMenu);
-    QIcon icon(item.image());
+//    qDebug() << statusTip;
+    FlowItem *item;
+    if (type <= FlowItem::flowPolygons) {
+        item = new FlowPolygon(type, Qt::white, 1, editMenu);
+    }
+    else if (type <= FlowItem::flowRound) {
+        return;
+    }
+    else if (type <= FlowItem::flowLines) {
+        item = new FlowLine();
+    }
+    else if (type == FlowItem::TextField) {
+        item = new TextField();
+    }
+    else {
+        return;
+    }
 
-    //QToolButton *button = new QToolButton;
-    QPushButton *button = new QPushButton;
-    button->setIcon(icon);
-    button->setIconSize(QSize(ICON_SIZE, ICON_SIZE));
+    QToolButton *button = new QToolButton;
+
     button->setCheckable(true);
-    itemButtons->addButton(button, int(type));
-
-    QGridLayout *layout = new QGridLayout;
-    //layout->addWidget(button);
-    layout->addWidget(button, 0, 0, Qt::AlignHCenter);
-    layout->addWidget(new QLabel(text), 1, 0, Qt::AlignCenter);
-
-    return widgetLayout(layout);
+    button->setIcon(QIcon(item->image()));
+    button->setStatusTip(statusTip);
+    button->setIconSize(QSize(ICON_X, ICON_Y));
+    itemButtons->addButton(button, type);
+    int count = gLayout->count();
+    gLayout->addWidget(button, count, 0, Qt::AlignCenter);
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
@@ -180,35 +183,35 @@ void MainWindow::itemButtonClicked(int id)
     if (!clickedButton->isChecked()) {
         // button is disabled - disble inserting mode
         canvas->setMode(Canvas::MoveItem);
+        canvas->setItemType(FlowItem::Type::None);
+        return;
     }
-    else if (FlowChartItem::FlowChartItemType(id) == FlowChartItem::None) {
-        // enable text insertion
-        canvas->setMode(Canvas::MoveItem);
+
+    switch (FlowItem::Type(id)) {
+        case FlowItem::Type::TextField:
+            canvas->setMode(Canvas::InsertText);
+            break;
+        case FlowItem::Type::Line:
+            canvas->setMode(Canvas::InsertLine);
+            break;
+        default:
+            canvas->setMode(Canvas::InsertItem);
     }
-    else if (FlowChartItem::FlowChartItemType(id) == FlowChartItem::Text) {
-        canvas->setMode(Canvas::InsertText);
-    }
-    else if (FlowChartItem::FlowChartItemType(id) == FlowChartItem::Line) {
-        canvas->setMode(Canvas::InsertLine);
-    }
-    else {
-        // button is enabled now - enable item insertion
-        canvas->setMode(Canvas::InsertItem);
-        canvas->setItemType(FlowChartItem::FlowChartItemType(id));
-    }
+
+    canvas->setItemType(FlowItem::Type(id));
 }
 
 void MainWindow::textInserted(QGraphicsTextItem *item) {
     qDebug() << "text inserted";
     canvas->setMode();
-    itemButtons->button(FlowChartItem::Text)->setChecked(false);
+    itemButtons->button(FlowItem::Type::TextField)->setChecked(false);
 }
 
 void MainWindow::itemSelected(QGraphicsItem *item) {
     qDebug() << "item selected";
 }
 
-void MainWindow::itemInserted(FlowChartItem *item) {
+void MainWindow::itemInserted(FlowPolygon *item) {
   /*  canvas->setMode();
     itemButtons->button(int(item->getType()))->setChecked(false);*/
 }

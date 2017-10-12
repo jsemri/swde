@@ -16,15 +16,17 @@ SOURCES +=   \
         src/mainwindow.cpp \
         src/main.cpp \
     src/canvas.cpp \
-    src/flowchartitem.cpp \
+    src/flowpolygon.cpp \
     src/textfield.cpp \
-    src/line.cpp
+    src/flowline.cpp \
+    src/flowitem.cpp
 
 HEADERS  += src/mainwindow.h \
    src/canvas.h \
-   src/flowchartitem.h \
+   src/flowpolygon.h \
     src/textfield.h \
-    src/line.h
+    src/flowline.h \
+    src/flowitem.h
 
 RESOURCES += images.qrc
 

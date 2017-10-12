@@ -3,7 +3,8 @@
 
 #include <QMainWindow>
 
-#include "flowchartitem.h"
+#include "flowpolygon.h"
+#include "flowitem.h"
 
 class Canvas;
 class QGraphicsView;
@@ -15,6 +16,7 @@ class QToolButton;
 class QFontComboBox;
 class QGraphicsTextItem;
 class QGraphicsItem;
+class QGridLayout;
 /*
 namespace Ui {
 class MainWindow;
@@ -23,8 +25,20 @@ class MainWindow;
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
+public:
+    explicit MainWindow(QWidget *parent = 0);
+    ~MainWindow();
 
 private:
+    void createActions();
+    void createToolbox();
+    void createMenus();
+
+
+    void createItemButton(QGridLayout *gLayout, FlowItem::Type type, QString statusTip);
+    void keyPressEvent(QKeyEvent *event) override;
+
+    static QWidget *widgetLayout(QLayout *layout);
     QHBoxLayout *layout;
     QGraphicsView *view;
     Canvas *canvas;
@@ -48,27 +62,11 @@ private:
     QAction *exitAction;
     //Ui::MainWindow *ui;
 
-public:
-    explicit MainWindow(QWidget *parent = 0);
-    ~MainWindow();
-
-private:
-    void createActions();
-    void createToolbox();
-    void createMenus();
-
-    static QWidget *widgetLayout(QLayout *layout);
-
-    QWidget *
-    createCellWidget(const QString &text,
-                       FlowChartItem::FlowChartItemType type);
-
-    void keyPressEvent(QKeyEvent *event) override;
 
 private slots:
     void itemButtonClicked(int id);
     void textInserted(QGraphicsTextItem *item);
-    void itemInserted(FlowChartItem *item);
+    void itemInserted(FlowPolygon *item);
     void itemSelected(QGraphicsItem *item);
     void arrowInserted();
 };

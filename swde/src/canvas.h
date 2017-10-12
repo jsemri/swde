@@ -6,12 +6,13 @@
 #include <QList>
 #include <QFont>
 
-#include "flowchartitem.h"
+#include "flowpolygon.h"
+#include "flowitem.h"
 
 class Qmenu;
 class TextField;
 class QGraphicsTextItem;
-class Arrow;
+class FlowLine;
 
 class Canvas : public QGraphicsScene
 {
@@ -26,12 +27,12 @@ private:
     QMenu *itemMenu;
 
     Mode mode;
-    FlowChartItem::FlowChartItemType itemType;
+    FlowItem::Type itemType;
 
     QGraphicsItem *activeItem;
     QPointF startArrowPoint;
     bool startArrowPointSet;
-    Arrow *arrow;
+    FlowLine *arrow;
 
 
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
@@ -41,13 +42,13 @@ private:
 
 public slots:
     void setMode(Mode m = MoveItem) { mode = m; }
-    void setItemType(FlowChartItem::FlowChartItemType type) { itemType = type; }
+    void setItemType(FlowItem::Type type) { itemType = type; }
     void editorLostFocus(TextField *item);
 
 signals:
     void textInserted(QGraphicsTextItem *item);
     void itemSelected(QGraphicsItem *item);
-    void itemInserted(FlowChartItem *item);
+    void itemInserted(FlowPolygon *item);
     void arrowInserted();
 };
 

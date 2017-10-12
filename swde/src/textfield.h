@@ -3,12 +3,15 @@
 
 #include <QPen>
 #include <QGraphicsTextItem>
+#include <QPixmap>
+
+#include "flowitem.h"
 
 class QGraphicsScene;
 class QGraphicsItem;
 class QGraphicsSceneMouseEvent;
 
-class TextField : public QGraphicsTextItem
+class TextField : public QGraphicsTextItem, public FlowItem
 {
     Q_OBJECT
 
@@ -17,6 +20,8 @@ public:
 
     TextField(QGraphicsItem *parent = 0);
     int type() const override {return Type;}
+    QPixmap image() const override;
+
 signals:
     void lostFocus(TextField *textField);
     void selectedChange(QGraphicsItem *item);

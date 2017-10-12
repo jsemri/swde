@@ -2,30 +2,29 @@
 #define FLOWCHARTITEM_H
 
 #include <QGraphicsPolygonItem>
+#include "flowitem.h"
 
-class FlowChartItem : public QGraphicsPolygonItem
+class FlowPolygon : public QGraphicsPolygonItem, public FlowItem
 {
 public:
     // identification used for graphic scene
     enum {Type = UserType + 36};
-    // possible shapes
-    enum FlowChartItemType {Process, Condition, Text, Line, None};
 
 private:
-    FlowChartItemType itemType;
+    FlowItem::Type itemType;
     QPolygonF polyg;
     qreal size;
     QMenu *contextMenu;
 
 public:
-    FlowChartItem
-    (FlowChartItemType type, QColor color, qreal size, QMenu *contextMenu,
+    FlowPolygon
+    (FlowItem::Type type, QColor color, qreal size, QMenu *contextMenu,
      QGraphicsItem *parent = 0);
+    ~FlowPolygon() {}
 
-    FlowChartItemType getType() const { return itemType; }
     QPolygonF polygon() const { return polyg; }
     int type() const override { return Type; }
-    QPixmap image() const;
+    QPixmap image() const override;
 
 protected:
     void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) override;

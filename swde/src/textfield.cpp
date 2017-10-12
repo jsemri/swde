@@ -1,4 +1,6 @@
 #include <QGraphicsSceneMouseEvent>
+#include <QPainter>
+
 #include "textfield.h"
 #include "canvas.h"
 
@@ -29,4 +31,17 @@ void TextField::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) {
         setTextInteractionFlags(Qt::TextEditorInteraction);
     }
     QGraphicsTextItem::mouseDoubleClickEvent(event);
+}
+
+QPixmap TextField::image() const {
+    QPixmap pixmap(250, 250);
+    pixmap.fill(Qt::transparent);
+    QPainter painter(&pixmap);
+    painter.setPen(QPen(Qt::black, 8));
+    QFont myFont;
+    myFont.setPixelSize(100);
+    painter.setFont(myFont);
+    painter.drawText(20,125, QString("Text"));
+
+    return pixmap;
 }
