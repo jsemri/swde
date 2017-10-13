@@ -12,7 +12,7 @@ ifeq ("$(HOST)","merlin.fit.vutbr.cz")
         QMAKE=/usr/local/share/Qt-5.5.1/5.5/gcc_64/bin/qmake
         export LD_LIBRARY_PATH:=/usr/local/share/Qt-5.5.1/5.5/gcc_64/lib:${LD_LIBRARY_PATH}
         export QT_PLUGIN_PATH:=/usr/local/share/Qt-5.5.1/5.5/gcc_64/plugins:${QT_PLUGIN_PATH}
-        endif
+    endif
 endif
 
 PROJ_PATH=$(shell pwd)/swde

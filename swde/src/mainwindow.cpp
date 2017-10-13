@@ -124,21 +124,18 @@ QWidget *MainWindow::widgetLayout(QLayout *layout)
 void MainWindow::createItemButton(QGridLayout *gLayout, FlowItem::Type type,
                                   QString statusTip)
 {
-//    qDebug() << statusTip;
     FlowItem *item;
-    if (type <= FlowItem::flowPolygons) {
+    if (type <= FlowItem::flowNodes) {
         item = new FlowPolygon(type, Qt::white, 1, editMenu);
     }
-    else if (type <= FlowItem::flowRound) {
-        return;
-    }
     else if (type <= FlowItem::flowLines) {
-        item = new FlowLine();
+        item = new FlowLine(type == FlowItem::Type::Arrow);
     }
     else if (type == FlowItem::TextField) {
         item = new TextField();
     }
     else {
+        assert(false);
         return;
     }
 
@@ -192,6 +189,7 @@ void MainWindow::itemButtonClicked(int id)
             canvas->setMode(Canvas::InsertText);
             break;
         case FlowItem::Type::Line:
+        case FlowItem::Type::Arrow:
             canvas->setMode(Canvas::InsertLine);
             break;
         default:
@@ -203,17 +201,19 @@ void MainWindow::itemButtonClicked(int id)
 
 void MainWindow::textInserted(QGraphicsTextItem *item) {
     qDebug() << "text inserted";
+    Q_UNUSED(item);
     canvas->setMode();
     itemButtons->button(FlowItem::Type::TextField)->setChecked(false);
 }
 
 void MainWindow::itemSelected(QGraphicsItem *item) {
     qDebug() << "item selected";
+    Q_UNUSED(item);
 }
 
 void MainWindow::itemInserted(FlowPolygon *item) {
-  /*  canvas->setMode();
-    itemButtons->button(int(item->getType()))->setChecked(false);*/
+    Q_UNUSED(item);
+    // TODO some stuff for undo operation
 }
 
 void MainWindow::arrowInserted() {

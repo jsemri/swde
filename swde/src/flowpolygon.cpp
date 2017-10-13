@@ -16,30 +16,31 @@ FlowPolygon::FlowPolygon
     QPainterPath path;
     switch (type) {
         case FlowItem::Type::Decision:
-            polyg << QPointF(-100*size, 0) << QPointF(0, 100*size)
-                  << QPointF(100*size, 0) << QPointF(0, -100*size)
-                  << QPointF(-100*size, 0);
+            polyg << QPointF(-50, 0) << QPointF(0, 50)
+                  << QPointF(50, 0) << QPointF(0, -50)
+                  << QPointF(-50, 0);
             break;
         case FlowItem::Type::Process:
-            polyg << QPointF(-100*size, -100*size)
-                  << QPointF(100*size, -100*size)
-                  << QPointF(100*size, 100*size)
-                  << QPointF(-100*size, 100*size)
-                  << QPointF(-100*size, -100*size);
+            polyg << QPointF(-40, -40)
+                  << QPointF(40, -40)
+                  << QPointF(40, 40)
+                  << QPointF(-40, 40)
+                  << QPointF(-40, -40);
             break;
         case FlowItem::Type::Terminal:
-            path.moveTo(200, 50);
-            path.arcTo(150, 0, 50, 50, 0, 90);
-            path.arcTo(50, 0, 50, 50, 90, 90);
-            path.arcTo(50, 50, 50, 50, 180, 90);
-            path.arcTo(150, 50, 50, 50, 270, 90);
-            path.lineTo(200, 25);
+            path.addRoundedRect(-40, -30, 80, 60, 30, 30);
+            //path.addRect(-40, -40, 80, 80);
             polyg = path.toFillPolygon();
             break;
         case FlowItem::Type::IO:
-            polyg << QPointF(-120*size, -80*size) << QPointF(-70*size, 80*size)
-                  << QPointF(120*size, 80*size) << QPointF(70*size, -80*size)
-                  << QPointF(-120*size, -80*size);
+            polyg << QPointF(60, -40) << QPointF(35, 40)
+                  << QPointF(-60, 40) << QPointF(-35, -40)
+                  << QPointF(60, -40);
+            break;
+        case FlowItem::Type::Circle:
+            path.addEllipse(-40, -40, 80, 80);
+            polyg = path.toFillPolygon();
+            break;
         default:
             ;
     }
@@ -54,11 +55,11 @@ FlowPolygon::FlowPolygon
 QPixmap FlowPolygon::image() const
 {
     // just output the item image, used for creating buttons
-    QPixmap pixmap(250, 250);
+    QPixmap pixmap(150, 150);
     pixmap.fill(Qt::transparent);
     QPainter painter(&pixmap);
     painter.setPen(QPen(Qt::black, 8));
-    painter.translate(125, 125);
+    painter.translate(75, 75);
     painter.drawPolyline(polyg);
 
     return pixmap;

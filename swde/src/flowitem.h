@@ -6,10 +6,9 @@
 
 class FlowItem {
 public:
-    enum Type {Terminal = 0, Decision, Process, IO, Transition, Place, Arc,
+    enum Type {Terminal = 0, Decision, Process, IO, Circle,
                Line, Arrow, TextField, None};
-    static const int flowPolygons = Type::Transition;
-    static const int flowRound = Type::Arc;
+    static const int flowNodes = Type::Circle;
     static const int flowLines = Type::Arrow;
     static const QMap<Type, QString> tips;
 

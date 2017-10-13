@@ -36,7 +36,8 @@ void Canvas::mousePressEvent(QGraphicsSceneMouseEvent *event) {
             break;
         case InsertLine:
             qDebug() << "inserting line";
-            arrow = new FlowLine(event->scenePos(),event->scenePos());
+            arrow = new FlowLine(itemType == FlowItem::Type::Arrow,
+                                 event->scenePos(),event->scenePos());
             addItem(arrow);
             break;
         case InsertText:

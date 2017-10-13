@@ -41,7 +41,7 @@ QPixmap TextField::image() const {
     QFont myFont;
     myFont.setPixelSize(100);
     painter.setFont(myFont);
-    painter.drawText(20,125, QString("Text"));
+    painter.drawText(20, 150, QString("Text"));
 
     return pixmap;
 }

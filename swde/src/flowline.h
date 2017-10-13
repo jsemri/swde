@@ -18,7 +18,8 @@ class FlowLine : public QGraphicsLineItem, public FlowItem
 public:
     enum { Type = UserType + 21 };
 
-    FlowLine(QPointF beginPoint = QPoint(), QPointF endPoint = QPoint(), QGraphicsItem *parent = 0);
+    FlowLine(bool arrowSet = false, QPointF beginPoint = QPoint(),
+             QPointF endPoint = QPoint(), QGraphicsItem *parent = 0);
 
     int type() const override { return Type; }
     QRectF boundingRect() const override;
@@ -34,6 +35,7 @@ protected:
             QWidget *widget) override;
 
 private:
+    bool arrowSet;
     QPolygonF arrowHead;
     QPointF beginPoint;
     QPointF endPoint;

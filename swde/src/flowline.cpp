@@ -2,11 +2,16 @@
 #include <QPen>
 #include <QDebug>
 
+#include <math.h>
 #include "flowline.h"
 
-FlowLine::FlowLine(
-    QPointF beginPoint, QPointF endPoint, QGraphicsItem *parent) :
-    QGraphicsLineItem(parent), beginPoint{beginPoint}, endPoint{endPoint}
+const qreal Pi = 3.14;
+
+FlowLine::FlowLine(bool arrowSet,
+        QPointF beginPoint, QPointF endPoint,
+        QGraphicsItem *parent) :
+    QGraphicsLineItem(parent), arrowSet{arrowSet},
+    beginPoint{beginPoint}, endPoint{endPoint}
 {
     setFlag(QGraphicsItem::ItemIsMovable);
     setFlag(QGraphicsItem::ItemIsSelectable);
@@ -24,7 +29,9 @@ QRectF FlowLine::boundingRect() const {
 
 QPainterPath FlowLine::shape() const {
     QPainterPath path = QGraphicsLineItem::shape();
-    path.addPolygon(arrowHead);
+    if (arrowSet) {
+        path.addPolygon(arrowHead);
+    }
     return path;
 }
 
@@ -40,8 +47,22 @@ void FlowLine::paint(
     //qreal arrowSize = 20;
     painter->setPen(myPen);
     painter->setBrush(Qt::black);
-
     setLine(QLineF(beginPoint, endPoint));
+    if (arrowSet) {
+        double angle = ::acos(line().dx() / line().length());
+        if (line().dy() >= 0) {
+            angle = (Pi * 2) - angle;
+        }
+        QPointF p1, p2;
+        p1 = line().p2() + QPointF(sin(angle + Pi / 3) * 20,
+                                 cos(angle + Pi / 3) * 20);
+        p2 = line().p2() + QPointF(sin(angle + Pi - Pi / 3) * 20,
+                                 cos(angle + Pi - Pi / 3) * 20);
+        arrowHead.clear();
+        arrowHead << line().p2() << p1 << p2;
+        painter->drawPolygon(arrowHead);
+    }
+
     painter->drawLine(line());
 }
 
@@ -50,6 +71,11 @@ QPixmap FlowLine::image() const {
     pixmap.fill(Qt::transparent);
     QPainter painter(&pixmap);
     painter.setPen(QPen(Qt::black, 8));
+    if (arrowSet) {
+        QPolygonF arrow;
+        arrow << QPointF(240, 10) << QPointF(240, 50) << QPointF(200, 10);
+        painter.drawPolygon(arrow);
+    }
     painter.drawLine(10, 240, 240, 10);
 
     return pixmap;
