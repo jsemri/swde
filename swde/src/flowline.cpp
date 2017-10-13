@@ -49,15 +49,17 @@ void FlowLine::paint(
     painter->setBrush(Qt::black);
     setLine(QLineF(beginPoint, endPoint));
     if (arrowSet) {
-        double angle = ::acos(line().dx() / line().length());
-        if (line().dy() >= 0) {
-            angle = (Pi * 2) - angle;
+        double alpha = ::acos(line().dx() / (line().length()+0.00001));
+        if (line().dy() <= 0) {
+            alpha = (Pi * 2) - alpha;
         }
+        double beta = Pi/12;
+        int size = 15;
         QPointF p1, p2;
-        p1 = line().p2() + QPointF(sin(angle + Pi / 3) * 20,
-                                 cos(angle + Pi / 3) * 20);
-        p2 = line().p2() + QPointF(sin(angle + Pi - Pi / 3) * 20,
-                                 cos(angle + Pi - Pi / 3) * 20);
+        p1 = line().p2() - QPointF(cos(alpha - beta) * size,
+                                 sin(alpha - beta) * size);
+        p2 = line().p2() - QPointF(sin(Pi/2 - alpha - beta) * size,
+                                 cos(Pi/2 - alpha - beta) * size);
         arrowHead.clear();
         arrowHead << line().p2() << p1 << p2;
         painter->drawPolygon(arrowHead);
