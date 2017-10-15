@@ -19,7 +19,8 @@ class Canvas : public QGraphicsScene
     Q_OBJECT
 public:
     // states of canvas
-    enum Mode {InsertItem, InsertLine, InsertText, MoveItem, Idle};
+    enum Mode {InsertItem, InsertLine, InsertText, MoveItem, MoveLineP1,
+               MoveLineP2, Idle};
 
     explicit Canvas(QMenu *itemMenu, QWidget *parrent=0);
 

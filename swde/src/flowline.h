@@ -25,8 +25,14 @@ public:
     QRectF boundingRect() const override;
     QPainterPath shape() const override;
 
-    void setBeginPoint(QPointF point) { beginPoint = point; }
-    void setEndPoint(QPointF point) { endPoint = point; }
+    void setBeginPoint(QPointF point) {
+        setLine(QLineF(point-pos(), line().p2()));
+    }
+
+    void setEndPoint(QPointF point) {
+        setLine(QLineF(line().p1(), point - pos()));
+    }
+
     QPixmap image() const override;
 
 protected:
@@ -37,8 +43,6 @@ protected:
 private:
     bool arrowSet;
     QPolygonF arrowHead;
-    QPointF beginPoint;
-    QPointF endPoint;
 };
 
 #endif // ARROW_H

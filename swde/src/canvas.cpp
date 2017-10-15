@@ -4,6 +4,7 @@
 #include <QRect>
 #include <QDebug>
 #include <QTextCursor>
+#include <math.h>
 
 #include "flowline.h"
 #include "canvas.h"
@@ -32,6 +33,20 @@ void Canvas::mousePressEvent(QGraphicsSceneMouseEvent *event) {
         case MoveItem:
             qDebug() << "moving item";
             activeItem = itemAt(event->scenePos(), QTransform());
+            if (activeItem &&
+                activeItem->type() == FlowLine::Type)
+            {
+                arrow = static_cast<FlowLine*>(activeItem);
+                qreal x = event->scenePos().x();
+                if (fabs(arrow->line().p1().x() + arrow->x() - x) < 10)
+                {
+                    mode = MoveLineP1;
+                }
+                else if (fabs(arrow->line().p2().x() + arrow->x() - x) < 10)
+                {
+                    mode = MoveLineP2;
+                }
+            }
             QGraphicsScene::mousePressEvent(event);
             break;
         case InsertLine:
@@ -63,28 +78,42 @@ void Canvas::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 }
 
 void Canvas::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
-
-    if (mode == MoveItem) {
-        if (activeItem) {
-            QGraphicsScene::mouseMoveEvent(event);
-        }
-    }
-    else if (mode == InsertLine && arrow) {
-        arrow->setEndPoint(event->scenePos());
-        arrow->update();
+    switch (mode) {
+        case MoveItem:
+            if (activeItem) {
+                QGraphicsScene::mouseMoveEvent(event);
+            }
+            break;
+        case InsertLine:
+            // arrow has to be set before it is modified
+            if (!arrow) {
+                break;
+            }
+        case MoveLineP2:
+            arrow->setEndPoint(event->scenePos());
+            arrow->update();
+            break;
+        case MoveLineP1:
+            arrow->setBeginPoint(event->scenePos());
+            arrow->update();
+        default:
+            ;
+            //QGraphicsScene::mouseMoveEvent(event);
     }
 }
 
 void Canvas::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
 
-    if (mode == MoveItem) {
-        QGraphicsScene::mouseReleaseEvent(event);
-    }
-    else if (mode == InsertLine) {
-        //arrow->setEndPoint(event->scenePos());
-        arrow = 0;
-        emit arrowInserted();
-        QGraphicsScene::mouseReleaseEvent(event);
+    switch (mode) {
+        case MoveLineP2:
+        case MoveLineP1:
+            mode = MoveItem;
+        case InsertLine:
+            arrow = 0;
+        case MoveItem:
+            QGraphicsScene::mouseReleaseEvent(event);
+        default:
+            ;
     }
     //QGraphicsScene::mouseReleaseEvent(event);
 }

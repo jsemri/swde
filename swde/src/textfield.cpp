@@ -26,7 +26,6 @@ void TextField::focusOutEvent(QFocusEvent *event) {
 }
 
 void TextField::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) {
-    //qDebug() << "Asd";
     if (textInteractionFlags() == Qt::NoTextInteraction) {
         setTextInteractionFlags(Qt::TextEditorInteraction);
     }
