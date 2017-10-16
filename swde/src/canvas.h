@@ -20,10 +20,7 @@ class Canvas : public QGraphicsScene
 public:
     // states of canvas
     enum Mode {InsertItem, InsertLine, InsertText, MoveItem, MoveLineP1,
-               MoveLineP2, Idle};
-
-    explicit Canvas(QMenu *itemMenu, QWidget *parrent=0);
-
+               MoveLineP2, ResizeItem, Idle};
 private:
     QMenu *itemMenu;
 
@@ -35,11 +32,15 @@ private:
     bool startArrowPointSet;
     FlowLine *arrow;
 
+    void static getInside(QGraphicsItem *item);
+    QPointF static getInside(QPointF point);
 
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
-    void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;    
+    void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
 
+public:
+    explicit Canvas(QMenu *itemMenu, QWidget *parrent=0);
 
 public slots:
     void setMode(Mode m = MoveItem) { mode = m; }

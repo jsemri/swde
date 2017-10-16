@@ -14,10 +14,12 @@ FlowPolygon::FlowPolygon
     contextMenu{contextMenu}
 {
     QPainterPath path;
-    switch (type) {
+    switch (itemType) {
         case FlowItem::Type::Decision:
-            polyg << QPointF(-50, 0) << QPointF(0, 50)
-                  << QPointF(50, 0) << QPointF(0, -50)
+            polyg << QPointF(-50, 0)
+                  << QPointF(0, 50)
+                  << QPointF(50, 0)
+                  << QPointF(0, -50)
                   << QPointF(-50, 0);
             break;
         case FlowItem::Type::Process:
@@ -28,13 +30,15 @@ FlowPolygon::FlowPolygon
                   << QPointF(-40, -40);
             break;
         case FlowItem::Type::Terminal:
-            path.addRoundedRect(-40, -30, 80, 60, 30, 30);
-            //path.addRect(-40, -40, 80, 80);
+            path.addRoundedRect(-40, -30, 80,
+                                60, 30, 30);
             polyg = path.toFillPolygon();
             break;
         case FlowItem::Type::IO:
-            polyg << QPointF(60, -40) << QPointF(35, 40)
-                  << QPointF(-60, 40) << QPointF(-35, -40)
+            polyg << QPointF(60, -40)
+                  << QPointF(35, 40)
+                  << QPointF(-60, 40)
+                  << QPointF(-35, -40)
                   << QPointF(60, -40);
             break;
         case FlowItem::Type::Circle:
@@ -50,7 +54,6 @@ FlowPolygon::FlowPolygon
     setFlag(QGraphicsItem::ItemIsSelectable);
     setFlag(QGraphicsItem::ItemSendsGeometryChanges);
 }
-
 
 QPixmap FlowPolygon::image() const
 {
@@ -92,4 +95,13 @@ void FlowPolygon::changeColor(QColor color) {
     gradient.setColorAt(1, Qt::white);
     QBrush brush(gradient);
     setBrush(brush);
+}
+
+void FlowPolygon::changeSize(qreal xratio, qreal yratio) {
+    QPolygonF newPolyg;
+    for (auto & point : polyg) {
+        newPolyg.append(QPointF(point.x()*xratio, point.y()*yratio));
+    }
+    polyg = newPolyg;
+    setPolygon(polyg);
 }

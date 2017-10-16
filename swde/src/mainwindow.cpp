@@ -52,7 +52,7 @@ MainWindow::MainWindow(QWidget *parent) :
     view->fitInView(0, 0, 500, 400, Qt::KeepAspectRatio);
     view->setDragMode(QGraphicsView::NoDrag);
     view->setCacheMode(QGraphicsView::CacheBackground);
-    view->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
+    //view->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
     view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     view->setEnabled(true);
@@ -169,6 +169,8 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 
 void MainWindow::itemButtonClicked(int id)
 {
+    // unselect all items
+    canvas->clearSelection();
     // set down other buttons
     auto clickedButton = itemButtons->button(id);
     for (auto &button : itemButtons->buttons()) {

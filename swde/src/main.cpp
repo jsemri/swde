@@ -3,10 +3,8 @@
 
 
 // goals:
-//      item mouse resizing
-//      scene borders
-//      toolbar: delete, copy, paste, color, border, text size, bold, italic, underline,
-//               gradient, to front, to back
+//      toolbar: delete, copy, paste, color, border, text size, bold, italic,
+//               underline, to front, to back, scale
 //      export, undo, save, load
 
 int main(int argc, char *argv[])
