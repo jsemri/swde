@@ -98,7 +98,7 @@ void MainWindow::createActions()
     pasteAction = new QAction(QIcon(":/images/paste.png"), tr("Paste"), this);
     pasteAction->setShortcut(tr("Ctrl+v"));
     connect(pasteAction, SIGNAL(triggered()), this, SLOT(paste()));
-    pasteAction->setChecked(false);
+    pasteAction->setEnabled(false);
 }
 
 // create buttons on the right
@@ -300,7 +300,7 @@ void MainWindow::copy() {
         else if (i->type() == TextField::Type) {
             itemCopy = new TextField(static_cast<TextField*>(i));
         }
-        pasteAction->setChecked(true);
+        pasteAction->setEnabled(true);
         break;
     }
 }

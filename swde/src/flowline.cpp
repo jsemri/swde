@@ -12,6 +12,14 @@ FlowLine::FlowLine(bool arrowSet,
         QGraphicsItem *parent) :
     QGraphicsLineItem(parent), arrowSet{arrowSet}
 {
+    // minimum size
+    if (beginPoint.x() - endPoint.x() < 10) {
+        beginPoint.setX(beginPoint.x() + 10);
+    }
+    if (beginPoint.y() - endPoint.y() < 10) {
+        beginPoint.setY(beginPoint.y() + 10);
+    }
+
     setLine(QLineF(beginPoint, endPoint));
     setFlag(QGraphicsItem::ItemIsMovable);
     setFlag(QGraphicsItem::ItemIsSelectable);
@@ -19,15 +27,14 @@ FlowLine::FlowLine(bool arrowSet,
 }
 
 FlowLine::FlowLine(FlowLine *fline) :
-    QGraphicsLineItem(0), arrowSet{fline->arrowSet}
+    FlowLine{fline->arrowSet, fline->line().p1(), fline->line().p2()}
 {
-    setLine(QLineF(fline->line().p1(), fline->line().p2()));
-    setFlag(QGraphicsItem::ItemIsMovable);
-    setFlag(QGraphicsItem::ItemIsSelectable);
-    setPen(QPen(Qt::black, 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    setPos(fline->pos());
+    setPen(fline->pen());
 }
 
 QRectF FlowLine::boundingRect() const {
+    return QRectF(line().p1(), line().p2()).normalized();
     qreal extra = (pen().width() + 30) / 2.0;
 
     return QRectF(line().p1(), QSizeF(line().p2().x() - line().p1().x(),

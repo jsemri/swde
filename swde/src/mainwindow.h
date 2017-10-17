@@ -17,10 +17,6 @@ class QFontComboBox;
 class QGraphicsTextItem;
 class QGraphicsItem;
 class QGridLayout;
-/*
-namespace Ui {
-class MainWindow;
-}*/
 
 class MainWindow : public QMainWindow
 {

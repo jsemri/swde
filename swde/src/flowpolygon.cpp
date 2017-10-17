@@ -58,6 +58,7 @@ FlowPolygon::FlowPolygon(FlowPolygon *fpolyg) :
     FlowPolygon{fpolyg->itemType, fpolyg->brush()}
 {
     polyg = fpolyg->polygon();
+    setPen(fpolyg->pen());
     setPolygon(polyg);
     setPos(pos());
 }
