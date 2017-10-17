@@ -3,9 +3,9 @@
 
 
 // goals:
-//      toolbar: delete, copy, paste, color, border, text size, bold, italic,
-//               underline, to front, to back, scale
-//      export, undo, save, load
+//      toolbar: brush, border |text size, bold, italic,
+//               underline,| to front, to back, scale|
+//      export, undo, save, open, new
 
 int main(int argc, char *argv[])
 {

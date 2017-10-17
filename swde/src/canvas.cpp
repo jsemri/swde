@@ -4,6 +4,7 @@
 #include <QRect>
 #include <QDebug>
 #include <QTextCursor>
+#include <QGraphicsView>
 #include <math.h>
 #include <cassert>
 
@@ -26,9 +27,10 @@ void Canvas::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     switch (mode) {
         case InsertItem:
             qDebug() << "inserting item";
-            item = new FlowPolygon(itemType, Qt::white, 0.5, itemMenu);
+            item = new FlowPolygon(itemType, QBrush(Qt::white));
             addItem(item);
             item->setPos(event->scenePos());
+            getInside(item);
             emit itemInserted(item);
             break;
         case MoveItem:
@@ -55,12 +57,14 @@ void Canvas::mousePressEvent(QGraphicsSceneMouseEvent *event) {
                 // moving arrow
                 arrow = static_cast<FlowLine*>(activeItem);
                 qreal x = event->scenePos().x();
-                if (fabs(arrow->line().p1().x() + arrow->x() - x) < 10)
+                qreal y = event->scenePos().y();
+                if (fabs(arrow->line().p1().x() + arrow->x() - x) < 15 &&
+                    fabs(arrow->line().p1().y() + arrow->y() - y) < 15)
                 {
                     mode = MoveLineP1;
                 }
-                else if (fabs(arrow->line().p2().x() + arrow->x() - x)
-                         < 10)
+                else if (fabs(arrow->line().p2().x() + arrow->x() - x) < 15 &&
+                         fabs(arrow->line().p2().y() + arrow->y() - y) < 15)
                 {
                     mode = MoveLineP2;
                 }
@@ -146,7 +150,6 @@ void Canvas::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
     switch (mode) {
         case ResizeItem:
             mode = MoveItem;
-            QGraphicsScene::mouseReleaseEvent(event);
             break;
         case MoveLineP2:
         case MoveLineP1:
@@ -154,11 +157,11 @@ void Canvas::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
         case InsertLine:
             arrow = 0;
         case MoveItem:
-            QGraphicsScene::mouseReleaseEvent(event);
+            break;
         default:
-            ;
+            return;
     }
-    //QGraphicsScene::mouseReleaseEvent(event);
+    QGraphicsScene::mouseReleaseEvent(event);
 }
 
 void Canvas::editorLostFocus(TextField *item) {
@@ -172,7 +175,7 @@ void Canvas::editorLostFocus(TextField *item) {
     }
 }
 
-QPointF Canvas::getInside(QPointF point) {
+QPointF Canvas::getInside(QPointF point) const {
     qreal x = point.x();
     qreal y = point.y();
     if (x < 0) {
@@ -190,29 +193,52 @@ QPointF Canvas::getInside(QPointF point) {
     return QPointF(x,y);
 }
 
-void Canvas::getInside(QGraphicsItem *item) {
+void Canvas::getInside(QGraphicsItem *item) const {
     QPointF corner1 = item->boundingRect().topLeft();
     QPointF corner2 = item->boundingRect().bottomRight();
     qreal x1 = item->x() -1;
     qreal y1 = item->y() -1;
-    qreal x2 = corner2.x() + item->x() + 1;
-    qreal y2 = corner2.y() + item->y() + 1;
 
     if (corner1.x() + x1 < 0) {
         item->setPos(-corner1.x(), item->pos().y());
-
     }
     if (corner1.y() + y1 < 0) {
         item->setPos(item->pos().x(), -corner1.y());
-
     }
-    if (corner2.x() + x2 > 1000) {
-        item->setPos(-corner2.x(), item->pos().y());
-
-
+    if (corner2.x() + x1 > 1000) {
+        item->setPos(1000 - corner2.x(), item->pos().y());
     }
-    if (corner2.y() + y2 > 1000) {
-        item->setPos(item->pos().x(), -corner2.y());
-
+    if (corner2.y() + y1 > 1000) {
+        item->setPos(item->pos().x(), 1000 - corner2.y());
     }
+}
+
+bool Canvas::isInside(QPointF point) const {
+    qreal x = point.x();
+    qreal y = point.y();
+    return x > 0 && y > 0 && x < 1000 && y < 1000;
+}
+
+void Canvas::pasteItem(QGraphicsItem *itemCopy) {
+    QGraphicsItem *res;
+    if (itemCopy->type() == FlowPolygon::Type) {
+        res = new FlowPolygon(static_cast<FlowPolygon*>(itemCopy));
+    }
+    else if (itemCopy->type() == FlowLine::Type) {
+        res = new FlowLine(static_cast<FlowLine*>(itemCopy));
+    }
+    else if (itemCopy->type() == TextField::Type) {
+        res = new TextField(static_cast<TextField*>(itemCopy));
+    }
+
+    addItem(res);
+    QRect rect = views().back()->geometry();
+    // XXX get position of canvas corner
+    if (isInside(QCursor::pos() - rect.topRight())) {
+        res->setPos(QCursor::pos() - rect.topRight());
+    }
+    else {
+        res->setPos(itemCopy->pos());
+    }
+    getInside(res);
 }

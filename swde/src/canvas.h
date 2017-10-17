@@ -32,8 +32,9 @@ private:
     bool startArrowPointSet;
     FlowLine *arrow;
 
-    void static getInside(QGraphicsItem *item);
-    QPointF static getInside(QPointF point);
+    void getInside(QGraphicsItem *item) const;
+    QPointF getInside(QPointF point) const;
+    bool isInside(QPointF point) const;
 
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
@@ -41,6 +42,7 @@ private:
 
 public:
     explicit Canvas(QMenu *itemMenu, QWidget *parrent=0);
+    void pasteItem(QGraphicsItem *itemCopy);
 
 public slots:
     void setMode(Mode m = MoveItem) { mode = m; }

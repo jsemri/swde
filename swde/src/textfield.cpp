@@ -11,6 +11,13 @@ TextField::TextField(QGraphicsItem *parent) :
     setFlag(QGraphicsItem::ItemIsSelectable);
 }
 
+TextField::TextField(TextField *textField) :
+    TextField{}
+{
+    this->setPlainText(textField->toPlainText());
+    setPos(textField->pos());
+}
+
 QVariant
 TextField::itemChange(GraphicsItemChange change, const QVariant &value) {
     if (change == QGraphicsItem::ItemSelectedHasChanged) {

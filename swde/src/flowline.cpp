@@ -11,9 +11,17 @@ FlowLine::FlowLine(bool arrowSet,
         QPointF beginPoint, QPointF endPoint,
         QGraphicsItem *parent) :
     QGraphicsLineItem(parent), arrowSet{arrowSet}
-  //  beginPoint{beginPoint}, endPoint{endPoint}
 {
     setLine(QLineF(beginPoint, endPoint));
+    setFlag(QGraphicsItem::ItemIsMovable);
+    setFlag(QGraphicsItem::ItemIsSelectable);
+    setPen(QPen(Qt::black, 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+}
+
+FlowLine::FlowLine(FlowLine *fline) :
+    QGraphicsLineItem(0), arrowSet{fline->arrowSet}
+{
+    setLine(QLineF(fline->line().p1(), fline->line().p2()));
     setFlag(QGraphicsItem::ItemIsMovable);
     setFlag(QGraphicsItem::ItemIsSelectable);
     setPen(QPen(Qt::black, 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));

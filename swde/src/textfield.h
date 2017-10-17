@@ -19,6 +19,8 @@ public:
     enum {Type = UserType + 99};
 
     TextField(QGraphicsItem *parent = 0);
+    TextField(TextField *textField);
+
     int type() const override {return Type;}
     QPixmap image() const override;
 

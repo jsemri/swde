@@ -8,10 +8,8 @@
 #include "flowpolygon.h"
 
 FlowPolygon::FlowPolygon
-(FlowItem::Type type, QColor color, qreal size, QMenu *contextMenu,
- QGraphicsItem *parent) :
-    QGraphicsPolygonItem(parent), FlowItem{}, itemType{type}, size{size},
-    contextMenu{contextMenu}
+(FlowItem::Type type, QBrush brush, QGraphicsItem *parent) :
+    QGraphicsPolygonItem(parent), FlowItem{}, itemType{type}
 {
     QPainterPath path;
     switch (itemType) {
@@ -49,10 +47,19 @@ FlowPolygon::FlowPolygon
             ;
     }
     setPolygon(polyg);
-    changeColor(color);
+    setBrush(brush);
     setFlag(QGraphicsItem::ItemIsMovable);
     setFlag(QGraphicsItem::ItemIsSelectable);
     setFlag(QGraphicsItem::ItemSendsGeometryChanges);
+}
+
+
+FlowPolygon::FlowPolygon(FlowPolygon *fpolyg) :
+    FlowPolygon{fpolyg->itemType, fpolyg->brush()}
+{
+    polyg = fpolyg->polygon();
+    setPolygon(polyg);
+    setPos(pos());
 }
 
 QPixmap FlowPolygon::image() const
@@ -68,36 +75,20 @@ QPixmap FlowPolygon::image() const
     return pixmap;
 }
 
-void FlowPolygon::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
-{
-    qDebug() << "context menu event";
-    return;
-    // right click ~-~-~-> edit
-    scene()->clearSelection();
-    setSelected(true);
-    contextMenu->exec(event->screenPos());
-}
-
-QVariant
-FlowPolygon::itemChange(GraphicsItemChange change, const QVariant &value)
-{
-    if (change == QGraphicsItem::ItemPositionChange) {
-
-    }
-
-    return value;
-}
-
-void FlowPolygon::changeColor(QColor color) {
+void FlowPolygon::changeBrush(QBrush brush) {
     // change color and set brush gradient
-    QRadialGradient gradient(QPointF(0,0), 250*size);
+    /*
+    QRadialGradient gradient(QPointF(0,0), 250);
     gradient.setColorAt(0, color);
     gradient.setColorAt(1, Qt::white);
     QBrush brush(gradient);
+    */
     setBrush(brush);
 }
 
 void FlowPolygon::changeSize(qreal xratio, qreal yratio) {
+    xratio += 0.0001;
+    yratio += 0.0001;
     QPolygonF newPolyg;
     for (auto & point : polyg) {
         newPolyg.append(QPointF(point.x()*xratio, point.y()*yratio));

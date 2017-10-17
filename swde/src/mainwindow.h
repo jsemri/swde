@@ -32,6 +32,7 @@ public:
 private:
     void createActions();
     void createToolbox();
+    void createToolbars();
     void createMenus();
 
 
@@ -42,6 +43,7 @@ private:
     QHBoxLayout *layout;
     QGraphicsView *view;
     Canvas *canvas;
+    QGraphicsItem *itemCopy;
 
     // top menus
     QMenu *fileMenu;
@@ -50,17 +52,22 @@ private:
     // bottom bar
     QToolBox *toolbox;
     QButtonGroup *itemButtons;
-    QButtonGroup *backgroundButtons;
 
     // top bar
     QToolBar *toolbar;
     QToolBar *editToolbar;
     QToolBar *textToolbar;
     QToolBar *itemToolbar;
+    QToolBar *aspectToolbar;
 
     // actions
     QAction *exitAction;
-    //Ui::MainWindow *ui;
+    QAction *deleteAction;
+    QAction *copyAction;
+    QAction *pasteAction;
+
+    QAction *putFrontAction;
+    QAction *putBackAction;
 
 
 private slots:
@@ -69,6 +76,11 @@ private slots:
     void itemInserted(FlowPolygon *item);
     void itemSelected(QGraphicsItem *item);
     void arrowInserted();
+    void deleteItem();
+    void putFront();
+    void putBack();
+    void copy();
+    void paste();
 };
 
 #endif // MAINWINDOW_H

@@ -29,10 +29,8 @@
 #define ICON_Y 60
 
 MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent)
-    //ui(new Ui::MainWindow)
+    QMainWindow(parent), itemCopy{0}
 {
-    //ui->setupUi(this);
     createActions();
     createMenus();
     createToolbox();
@@ -57,6 +55,7 @@ MainWindow::MainWindow(QWidget *parent) :
     view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     view->setEnabled(true);
 
+    createToolbars();
     layout = new QHBoxLayout();
     layout->addWidget(toolbox);
     layout->addWidget(view);
@@ -69,13 +68,37 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-
+    if (itemCopy) {
+        delete itemCopy;
+    }
 }
 
 void MainWindow::createActions()
 {
     exitAction = new QAction(tr("E&xit"), this);
     connect(exitAction, SIGNAL(triggered()), this, SLOT(close()));
+
+    deleteAction = new QAction(QIcon(":/images/delete.png"), tr("Delete"),
+                               this);
+    deleteAction->setShortcut(tr("Delete"));
+    connect(deleteAction, SIGNAL(triggered()), this, SLOT(deleteItem()));
+
+    putFrontAction = new QAction(QIcon(":/images/tofront.png"),
+                                 tr("PutF ront"), this);
+    connect(putFrontAction, SIGNAL(triggered()), this, SLOT(putFront()));
+
+    putBackAction = new QAction(QIcon(":/images/toback.png"), tr("Put Back"),
+                                this);
+    connect(putBackAction, SIGNAL(triggered()), this, SLOT(putBack()));
+
+    copyAction = new QAction(QIcon(":/images/copy.png"), tr("Copy"), this);
+    copyAction->setShortcut(tr("Ctrl+c"));
+    connect(copyAction, SIGNAL(triggered()), this, SLOT(copy()));
+
+    pasteAction = new QAction(QIcon(":/images/paste.png"), tr("Paste"), this);
+    pasteAction->setShortcut(tr("Ctrl+v"));
+    connect(pasteAction, SIGNAL(triggered()), this, SLOT(paste()));
+    pasteAction->setChecked(false);
 }
 
 // create buttons on the right
@@ -114,6 +137,17 @@ void MainWindow::createMenus()
     fileMenu->addAction(exitAction);
 }
 
+void MainWindow::createToolbars() {
+    editToolbar = addToolBar(tr("Edit Item"));
+    editToolbar->addAction(deleteAction);
+    editToolbar->addAction(copyAction);
+    editToolbar->addAction(pasteAction);
+
+    aspectToolbar = addToolBar(tr("Aspect"));
+    aspectToolbar->addAction(putFrontAction);
+    aspectToolbar->addAction(putBackAction);
+}
+
 QWidget *MainWindow::widgetLayout(QLayout *layout)
 {
     QWidget *widget = new QWidget;
@@ -126,7 +160,7 @@ void MainWindow::createItemButton(QGridLayout *gLayout, FlowItem::Type type,
 {
     FlowItem *item;
     if (type <= FlowItem::flowNodes) {
-        item = new FlowPolygon(type, Qt::white, 1, editMenu);
+        item = new FlowPolygon(type, QBrush(Qt::white));
     }
     else if (type <= FlowItem::flowLines) {
         item = new FlowLine(type == FlowItem::Type::Arrow);
@@ -220,4 +254,58 @@ void MainWindow::itemInserted(FlowPolygon *item) {
 
 void MainWindow::arrowInserted() {
 
+}
+
+void MainWindow::deleteItem() {
+    for (auto &i : canvas->selectedItems()) {
+        canvas->removeItem(i);
+    }
+}
+
+void MainWindow::putFront() {
+    qreal zmax = 0;
+    for (auto &i : canvas->items()) {
+        if (i->type() == FlowPolygon::Type || i->type() == FlowLine::Type) {
+            zmax = i->zValue() > zmax ? i->zValue() : zmax;
+        }
+    }
+    for (auto &i : canvas->selectedItems()) {
+        i->setZValue(zmax + 0.001);
+    }
+}
+
+void MainWindow::putBack() {
+    qreal zmin = 0;
+    for (auto &i : canvas->items()) {
+        if (i->type() == FlowPolygon::Type || i->type() == FlowLine::Type) {
+            zmin = i->zValue() < zmin ? i->zValue() : zmin;
+        }
+    }
+    for (auto &i : canvas->selectedItems()) {
+        i->setZValue(zmin - 0.001);
+    }
+}
+
+void MainWindow::copy() {
+    for (auto & i : canvas->selectedItems()) {
+        if (itemCopy) {
+            delete itemCopy;
+        }
+        if (i->type() == FlowPolygon::Type) {
+            itemCopy = new FlowPolygon(static_cast<FlowPolygon*>(i));
+        }
+        else if (i->type() == FlowLine::Type) {
+            itemCopy = new FlowLine(static_cast<FlowLine*>(i));
+        }
+        else if (i->type() == TextField::Type) {
+            itemCopy = new TextField(static_cast<TextField*>(i));
+        }
+        pasteAction->setChecked(true);
+        break;
+    }
+}
+
+void MainWindow::paste() {
+    assert(itemCopy);
+    canvas->pasteItem(itemCopy);
 }
