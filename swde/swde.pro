@@ -30,4 +30,4 @@ HEADERS  += src/mainwindow.h \
 
 RESOURCES += images.qrc
 
-FORMS    += src/mainwindow.ui
+FORMS    +=
