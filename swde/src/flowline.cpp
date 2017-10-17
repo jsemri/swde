@@ -12,14 +12,6 @@ FlowLine::FlowLine(bool arrowSet,
         QGraphicsItem *parent) :
     QGraphicsLineItem(parent), arrowSet{arrowSet}
 {
-    // minimum size
-    if (beginPoint.x() - endPoint.x() < 10) {
-        beginPoint.setX(beginPoint.x() + 10);
-    }
-    if (beginPoint.y() - endPoint.y() < 10) {
-        beginPoint.setY(beginPoint.y() + 10);
-    }
-
     setLine(QLineF(beginPoint, endPoint));
     setFlag(QGraphicsItem::ItemIsMovable);
     setFlag(QGraphicsItem::ItemIsSelectable);
@@ -34,13 +26,9 @@ FlowLine::FlowLine(FlowLine *fline) :
 }
 
 QRectF FlowLine::boundingRect() const {
-    return QRectF(line().p1(), line().p2()).normalized();
-    qreal extra = (pen().width() + 30) / 2.0;
-
-    return QRectF(line().p1(), QSizeF(line().p2().x() - line().p1().x(),
-                                      line().p2().y() - line().p1().y()))
-        .normalized()
-        .adjusted(-extra, -extra, extra, extra);
+    qreal extra = (pen().width() + 10) / 2.0;
+    return QRectF(line().p1(), line().p2()).normalized()
+           .adjusted(-extra, -extra, extra, extra);
 }
 
 QPainterPath FlowLine::shape() const {

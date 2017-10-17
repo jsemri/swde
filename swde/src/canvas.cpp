@@ -17,6 +17,7 @@ Canvas::Canvas(QMenu *itemMenu, QWidget *parrent) :
     mode{MoveItem}, itemType{FlowItem::Type::None},
     activeItem{nullptr}
 {
+    resize(1000, 1000);
     setBackgroundBrush(Qt::white);
 }
 
@@ -184,11 +185,11 @@ QPointF Canvas::getInside(QPointF point) const {
     if (y < 0) {
         y = 0;
     }
-    if (x > 1000) {
-        x = 1000;
+    if (x > width()) {
+        x = width();
     }
-    if (y > 1000) {
-        y = 1000;
+    if (y > height()) {
+        y = height();
     }
     return QPointF(x,y);
 }
@@ -205,18 +206,18 @@ void Canvas::getInside(QGraphicsItem *item) const {
     if (corner1.y() + y1 < 0) {
         item->setPos(item->pos().x(), -corner1.y());
     }
-    if (corner2.x() + x1 > 1000) {
-        item->setPos(1000 - corner2.x(), item->pos().y());
+    if (corner2.x() + x1 > width()) {
+        item->setPos(width() - corner2.x(), item->pos().y());
     }
-    if (corner2.y() + y1 > 1000) {
-        item->setPos(item->pos().x(), 1000 - corner2.y());
+    if (corner2.y() + y1 > height()) {
+        item->setPos(item->pos().x(), height() - corner2.y());
     }
 }
 
 bool Canvas::isInside(QPointF point) const {
     qreal x = point.x();
     qreal y = point.y();
-    return x > 0 && y > 0 && x < 1000 && y < 1000;
+    return x > 0 && y > 0 && x < width() && y < height();
 }
 
 void Canvas::pasteItem(QGraphicsItem *itemCopy) {
@@ -232,13 +233,26 @@ void Canvas::pasteItem(QGraphicsItem *itemCopy) {
     }
 
     addItem(res);
-    QRect rect = views().back()->geometry();
-    // XXX get position of canvas corner
-    if (isInside(QCursor::pos() - rect.topRight())) {
-        res->setPos(QCursor::pos() - rect.topRight());
+    QGraphicsView *v = views().back();
+    QPoint p = v->mapFromGlobal(QCursor::pos());
+    QPointF point = v->mapToScene(p);
+    qDebug() << point << QCursor::pos();
+    if (isInside(point)) {
+        res->setPos(point);
+        // XXX problem with line
+        // res->setPos(150,150);
     }
     else {
         res->setPos(itemCopy->pos());
     }
     getInside(res);
+}
+
+void Canvas::resize(int w, int h) {
+    clear();
+    setSceneRect(0, 0, w, h);
+    addLine(0, 0, width(), 0,QPen(QBrush(Qt::blue),2));
+    addLine(width(), 0, width(), height(), QPen(QBrush(Qt::blue),2));
+    addLine(width(), height(), 0, height(),QPen(QBrush(Qt::blue),2));
+    addLine(0, height(), 0, 0, QPen(QBrush(Qt::blue),2));
 }

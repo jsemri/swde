@@ -43,6 +43,7 @@ private:
 public:
     explicit Canvas(QMenu *itemMenu, QWidget *parrent=0);
     void pasteItem(QGraphicsItem *itemCopy);
+    void resize(int width, int h);
 
 public slots:
     void setMode(Mode m = MoveItem) { mode = m; }

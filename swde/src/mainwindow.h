@@ -31,11 +31,12 @@ private:
     void createToolbars();
     void createMenus();
 
-
-    void createItemButton(QGridLayout *gLayout, FlowItem::Type type, QString statusTip);
     void keyPressEvent(QKeyEvent *event) override;
+    void createItemButton(
+            QGridLayout *gLayout, FlowItem::Type type, QString statusTip);
 
     static QWidget *widgetLayout(QLayout *layout);
+
     QHBoxLayout *layout;
     QGraphicsView *view;
     Canvas *canvas;
@@ -50,7 +51,6 @@ private:
     QButtonGroup *itemButtons;
 
     // top bar
-    QToolBar *toolbar;
     QToolBar *editToolbar;
     QToolBar *textToolbar;
     QToolBar *itemToolbar;
@@ -77,6 +77,7 @@ private slots:
     void putBack();
     void copy();
     void paste();
+    void scaleChanged(const QString &scale);
 };
 
 #endif // MAINWINDOW_H

@@ -46,7 +46,7 @@ MainWindow::MainWindow(QWidget *parent) :
             SLOT(arrowInserted(void)));
 
     view = new QGraphicsView(canvas);
-    view->setSceneRect(0, 0, 1000, 1000);
+    //view->setSceneRect(0, 0, 1000, 1000);
     view->fitInView(0, 0, 500, 400, Qt::KeepAspectRatio);
     view->setDragMode(QGraphicsView::NoDrag);
     view->setCacheMode(QGraphicsView::CacheBackground);
@@ -54,6 +54,9 @@ MainWindow::MainWindow(QWidget *parent) :
     view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     view->setEnabled(true);
+    view->setFrameRect(QRect(0,0,1000,1000));
+    view->setFrameStyle(QFrame::Box);
+    view->setFrameShadow(QFrame::Raised);
 
     createToolbars();
     layout = new QHBoxLayout();
@@ -146,6 +149,17 @@ void MainWindow::createToolbars() {
     aspectToolbar = addToolBar(tr("Aspect"));
     aspectToolbar->addAction(putFrontAction);
     aspectToolbar->addAction(putBackAction);
+
+    QComboBox *scaleCombo = new QComboBox;
+    QStringList scales;
+    scales << tr("25%") << tr("50%") << tr("75%") << tr("100%") << tr("125%")
+           << tr("150%") << tr("200%") << tr("300%") << tr("400%");
+    scaleCombo->addItems(scales);
+    scaleCombo->setCurrentIndex(3);
+    connect(scaleCombo, SIGNAL(currentIndexChanged(QString)),
+            this, SLOT(scaleChanged(QString)));
+    aspectToolbar->addWidget(scaleCombo);
+
 }
 
 QWidget *MainWindow::widgetLayout(QLayout *layout)
@@ -308,4 +322,13 @@ void MainWindow::copy() {
 void MainWindow::paste() {
     assert(itemCopy);
     canvas->pasteItem(itemCopy);
+}
+
+void MainWindow::scaleChanged(const QString &scale)
+{
+    QMatrix m = view->matrix();
+    double s = scale.left(scale.indexOf(tr("%"))).toDouble() / 100.0;
+    view->resetMatrix();
+    view->translate(m.dx(), m.dy());
+    view->scale(s, s);
 }
