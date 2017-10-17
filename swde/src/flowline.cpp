@@ -21,6 +21,7 @@ FlowLine::FlowLine(bool arrowSet,
 FlowLine::FlowLine(FlowLine *fline) :
     FlowLine{fline->arrowSet, fline->line().p1(), fline->line().p2()}
 {
+    qDebug() << "line position: " << fline->pos();
     setPos(fline->pos());
     setPen(fline->pen());
 }
@@ -46,11 +47,14 @@ void FlowLine::paint(
     Q_UNUSED(widget);
     Q_UNUSED(option);
 
+    if (fabs(line().dx()) < 5 && fabs(line().dy()) < 5) {
+        return;
+    }
+
     QPen myPen = pen();
     myPen.setColor(Qt::black);
     painter->setPen(myPen);
     painter->setBrush(Qt::black);
-    //setLine(QLineF(beginPoint, endPoint));
     if (arrowSet) {
         double alpha = ::acos(line().dx() / (line().length()+0.00001));
         if (line().dy() <= 0) {

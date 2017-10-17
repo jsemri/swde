@@ -238,9 +238,13 @@ void Canvas::pasteItem(QGraphicsItem *itemCopy) {
     QPointF point = v->mapToScene(p);
     qDebug() << point << QCursor::pos();
     if (isInside(point)) {
+
+        if (res->type() == FlowLine::Type) {
+            FlowLine *line = static_cast<FlowLine*>(res);
+            point -= (line->line().p1() + line->line().p2())/2;
+        }
+
         res->setPos(point);
-        // XXX problem with line
-        // res->setPos(150,150);
     }
     else {
         res->setPos(itemCopy->pos());
