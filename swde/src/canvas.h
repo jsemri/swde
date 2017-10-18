@@ -33,6 +33,7 @@ private:
     FlowLine *arrow;
     QColor itemColor;
     QPen itemPen;
+    QFont textFont;
 
     void getInside(QGraphicsItem *item) const;
     QPointF getInside(QPointF point) const;
@@ -46,6 +47,7 @@ public:
     explicit Canvas(QMenu *itemMenu, QWidget *parrent=0);
     void pasteItem(QGraphicsItem *itemCopy);
     void resize(int width, int h);
+    void setFont(const QFont &font);
     void setItemColor(QColor color) { itemColor = color; }
     QPen pen() const { return itemPen; }
 

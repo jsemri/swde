@@ -18,6 +18,7 @@ Canvas::Canvas(QMenu *itemMenu, QWidget *parrent) :
     mode{MoveItem}, itemType{FlowItem::Type::None},
     activeItem{nullptr}, itemColor(Qt::white), itemPen{QPen(Qt::black, 1)}
 {
+    textFont.setPointSize(12);
     resize(1000, 1000);
     setBackgroundBrush(Qt::white);
 }
@@ -85,7 +86,7 @@ void Canvas::mousePressEvent(QGraphicsSceneMouseEvent *event) {
             qDebug() << "inserting text";
             text = new TextField();
             text->setZValue(1001);
-            //text->setFont(QFont::Normal);
+            text->setFont(textFont);
             text->setTextInteractionFlags(Qt::TextEditorInteraction);
             addItem(text);
             text->setPos(event->scenePos());
@@ -252,6 +253,18 @@ void Canvas::pasteItem(QGraphicsItem *itemCopy) {
         res->setPos(itemCopy->pos());
     }
     getInside(res);
+}
+
+void Canvas::setFont(const QFont &font) {
+    textFont = font;
+    for (auto & i : selectedItems()) {
+        if (i->type() == TextField::Type) {
+            TextField *textField = qgraphicsitem_cast<TextField *>(
+                    selectedItems().first());
+            textField->setFont(textFont);
+        }
+        break;
+    }
 }
 
 void Canvas::resize(int w, int h) {

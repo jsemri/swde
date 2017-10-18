@@ -63,6 +63,8 @@ private:
     QToolButton *borderColorButton;
     QComboBox *borderWidthCombo;
 
+    QComboBox *fontSizeCombo;
+
     // actions
     QAction *exitAction;
     QAction *deleteAction;
@@ -75,6 +77,10 @@ private:
     QAction *changeColorAction;
     QAction *changeBorderColorAction;
     QAction *changeBorderWidthAction;
+
+    QAction *toBoldAction;
+    QAction *toItalicAction;
+    QAction *toUnderlineAction;
 
 
 private slots:
@@ -92,6 +98,8 @@ private slots:
     void changeColor();
     void colorButtonTriggered();
     void changeBorderColor();
+    void fontSizeChanged(QString);
+    void changeFont();
 };
 
 #endif // MAINWINDOW_H

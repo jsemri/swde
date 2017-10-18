@@ -14,7 +14,8 @@ TextField::TextField(QGraphicsItem *parent) :
 TextField::TextField(TextField *textField) :
     TextField{}
 {
-    this->setPlainText(textField->toPlainText());
+    setFont(textField->font());
+    setPlainText(textField->toPlainText());
     setPos(textField->pos());
 }
 

@@ -10,6 +10,7 @@
 #include <QToolBar>
 #include <QKeyEvent>
 #include <QDesktopWidget>
+#include <QApplication>
 #include <QAction>
 #include <QButtonGroup>
 #include <QMenuBar>
@@ -46,7 +47,6 @@ MainWindow::MainWindow(QWidget *parent) :
             SLOT(arrowInserted(void)));
 
     view = new QGraphicsView(canvas);
-    //view->setSceneRect(0, 0, 1000, 1000);
     view->fitInView(0, 0, 500, 400, Qt::KeepAspectRatio);
     view->setDragMode(QGraphicsView::NoDrag);
     view->setCacheMode(QGraphicsView::CacheBackground);
@@ -66,7 +66,7 @@ MainWindow::MainWindow(QWidget *parent) :
     setWindowIcon(QIcon(":/images/swde.png"));
     setWindowTitle("Simple Workflow Diagram Editor");
     setMinimumSize(600, 400);
-    //setGeometry(qApp->desktop()->availableGeometry());
+    setGeometry(qApp->desktop()->availableGeometry());
 }
 
 MainWindow::~MainWindow()
@@ -102,6 +102,18 @@ void MainWindow::createActions()
     pasteAction->setShortcut(tr("Ctrl+v"));
     connect(pasteAction, SIGNAL(triggered()), this, SLOT(paste()));
     pasteAction->setEnabled(false);
+
+    toBoldAction = new QAction(QIcon(":/images/bold.png"), tr("Bold"), this);
+    toBoldAction->setCheckable(true);
+    connect(toBoldAction, SIGNAL(triggered()), this, SLOT(changeFont()));
+    toItalicAction = new QAction(QIcon(":/images/italic.png"), tr("Italic"),
+                                 this);
+    toItalicAction->setCheckable(true);
+    connect(toItalicAction, SIGNAL(triggered()), this, SLOT(changeFont()));
+    toUnderlineAction = new QAction(QIcon(":/images/underline.png"),
+                                    tr("Underline"), this);
+    toUnderlineAction->setCheckable(true);
+    connect(toUnderlineAction, SIGNAL(triggered()), this, SLOT(changeFont()));
 }
 
 // create buttons on the right
@@ -195,6 +207,19 @@ void MainWindow::createToolbars() {
     itemToolbar->addWidget(borderWidthCombo);
 
     // text
+    fontSizeCombo = new QComboBox;
+    for (int i = 8; i < 30; i+=2) {
+        fontSizeCombo->addItem(QString().setNum(i));
+    }
+    fontSizeCombo->setCurrentIndex(2);
+    connect(fontSizeCombo, SIGNAL(currentIndexChanged(QString)), this,
+            SLOT(fontSizeChanged(QString)));
+
+    textToolbar = addToolBar(tr("Text Editing"));
+    textToolbar->addWidget(fontSizeCombo);
+    textToolbar->addAction(toBoldAction);
+    textToolbar->addAction(toItalicAction);
+    textToolbar->addAction(toUnderlineAction);
 }
 
 QWidget *MainWindow::widgetLayout(QLayout *layout)
@@ -434,4 +459,20 @@ void MainWindow::colorButtonTriggered() {
             static_cast<FlowPolygon*>(i)->changeColor(color);
         }
     }
+}
+
+void MainWindow::changeFont() {
+    qDebug() << "changing font";
+    QFont font = canvas->font();
+    font.setPointSize(fontSizeCombo->currentText().toInt());
+    font.setItalic(toItalicAction->isChecked());
+    font.setWeight(toBoldAction->isChecked() ? QFont::Bold : QFont::Normal);
+    font.setUnderline(toUnderlineAction->isChecked());
+
+    canvas->setFont(font);
+}
+
+void MainWindow::fontSizeChanged(QString s) {
+    Q_UNUSED(s);
+    changeFont();
 }
