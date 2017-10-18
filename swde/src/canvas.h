@@ -31,6 +31,8 @@ private:
     QPointF startArrowPoint;
     bool startArrowPointSet;
     FlowLine *arrow;
+    QColor itemColor;
+    QPen itemPen;
 
     void getInside(QGraphicsItem *item) const;
     QPointF getInside(QPointF point) const;
@@ -44,11 +46,16 @@ public:
     explicit Canvas(QMenu *itemMenu, QWidget *parrent=0);
     void pasteItem(QGraphicsItem *itemCopy);
     void resize(int width, int h);
+    void setItemColor(QColor color) { itemColor = color; }
+    QPen pen() const { return itemPen; }
 
 public slots:
     void setMode(Mode m = MoveItem) { mode = m; }
     void setItemType(FlowItem::Type type) { itemType = type; }
     void editorLostFocus(TextField *item);
+    void penWidthChanged(int width);
+    void penColorChanged(QColor color);
+    void borderButtonClicked();
 
 signals:
     void textInserted(QGraphicsTextItem *item);

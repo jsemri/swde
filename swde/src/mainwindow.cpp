@@ -146,6 +146,7 @@ void MainWindow::createToolbars() {
     editToolbar->addAction(copyAction);
     editToolbar->addAction(pasteAction);
 
+    // aspects
     aspectToolbar = addToolBar(tr("Aspect"));
     aspectToolbar->addAction(putFrontAction);
     aspectToolbar->addAction(putBackAction);
@@ -160,6 +161,40 @@ void MainWindow::createToolbars() {
             this, SLOT(scaleChanged(QString)));
     aspectToolbar->addWidget(scaleCombo);
 
+    // nodes and arrows color & border toolbar
+    // shape color
+    colorButton = new QToolButton;
+    colorButton->setPopupMode(QToolButton::MenuButtonPopup);
+    colorButton->setMenu(createColorMenu(SLOT(changeColor()), Qt::white));
+    changeColorAction = colorButton->menu()->defaultAction();
+    colorButton->setIcon(createColorIcon(Qt::white));
+    connect(colorButton, SIGNAL(clicked()), this,
+            SLOT(colorButtonTriggered()));
+
+    // border color
+    borderColorButton = new QToolButton;
+    borderColorButton->setPopupMode(QToolButton::MenuButtonPopup);
+    borderColorButton->setMenu(createColorMenu(SLOT(changeBorderColor()), Qt::black));
+    changeBorderColorAction = borderColorButton->menu()->defaultAction();
+    borderColorButton->setIcon(createBorderIcon(Qt::black, 2));
+    connect(borderColorButton, SIGNAL(clicked()), canvas,
+            SLOT(borderButtonClicked()));
+
+    // border width
+    borderWidthCombo = new QComboBox;
+    for (int i = 1; i < 9; i++) {
+        borderWidthCombo->addItem(createBorderIcon(Qt::black, i), QString().setNum(i), i);
+    }
+    borderWidthCombo->setCurrentIndex(1);
+    connect(borderWidthCombo, SIGNAL(currentIndexChanged(int)),
+            canvas, SLOT(penWidthChanged(int)));
+
+    itemToolbar = addToolBar(tr("Color and Borders"));
+    itemToolbar->addWidget(colorButton);
+    itemToolbar->addWidget(borderColorButton);
+    itemToolbar->addWidget(borderWidthCombo);
+
+    // text
 }
 
 QWidget *MainWindow::widgetLayout(QLayout *layout)
@@ -174,7 +209,7 @@ void MainWindow::createItemButton(QGridLayout *gLayout, FlowItem::Type type,
 {
     FlowItem *item;
     if (type <= FlowItem::flowNodes) {
-        item = new FlowPolygon(type, QBrush(Qt::white));
+        item = new FlowPolygon(type);
     }
     else if (type <= FlowItem::flowLines) {
         item = new FlowLine(type == FlowItem::Type::Arrow);
@@ -196,6 +231,50 @@ void MainWindow::createItemButton(QGridLayout *gLayout, FlowItem::Type type,
     itemButtons->addButton(button, type);
     int count = gLayout->count();
     gLayout->addWidget(button, count, 0, Qt::AlignCenter);
+}
+
+QMenu *MainWindow::createColorMenu(const char *slot, QColor defaultColor)
+{
+    QList<QColor> colors;
+    colors << Qt::black << Qt::white << Qt::lightGray << Qt::cyan << Qt::blue
+           << Qt::darkMagenta << Qt::red << QColor(255,128,0) << Qt::darkYellow;
+
+    QMenu *colorMenu = new QMenu(this);
+    for (auto & i : colors) {
+        QAction *action = new QAction(this);
+        action->setData(i);
+        action->setIcon(createColorIcon(i));
+        connect(action, SIGNAL(triggered()), this, slot);
+        colorMenu->addAction(action);
+        if (i == defaultColor) {
+            colorMenu->setDefaultAction(action);
+        }
+    }
+    colorMenu->setMaximumWidth(30);
+
+    return colorMenu;
+}
+
+QIcon MainWindow::createColorIcon(QColor color)
+{
+    QPixmap pixmap(20, 20);
+    QPainter painter(&pixmap);
+    painter.setPen(Qt::NoPen);
+    painter.fillRect(QRect(0, 0, 20, 20), QBrush(color));
+
+    return QIcon(pixmap);
+}
+
+QIcon MainWindow::createBorderIcon(QColor color, int width)
+{
+    QPixmap pixmap(20, 20);
+    QPainter painter(&pixmap);
+    painter.setPen(Qt::NoPen);
+    painter.fillRect(QRect(0,0,20,20), Qt::white);
+    painter.setPen(QPen(color, width));
+    painter.drawLine(0, 0, 20, 20);
+
+    return QIcon(pixmap);
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
@@ -331,4 +410,28 @@ void MainWindow::scaleChanged(const QString &scale)
     view->resetMatrix();
     view->translate(m.dx(), m.dy());
     view->scale(s, s);
+}
+
+void MainWindow::changeBorderColor() {
+    changeBorderColorAction = qobject_cast<QAction *>(sender());
+    QColor color = qvariant_cast<QColor>(changeBorderColorAction->data());
+    borderColorButton->setIcon(createBorderIcon(color, 2));
+    canvas->penColorChanged(color);
+}
+
+void MainWindow::changeColor() {
+    changeColorAction = qobject_cast<QAction *>(sender());
+    QColor color = qvariant_cast<QColor>(changeColorAction->data());
+    colorButton->setIcon(createColorIcon(color));
+    canvas->setItemColor(color);
+    colorButtonTriggered();
+}
+
+void MainWindow::colorButtonTriggered() {
+    for (auto &i : canvas->selectedItems()) {
+        QColor color = qvariant_cast<QColor>(changeColorAction->data());
+        if (i->type() == FlowPolygon::Type) {
+            static_cast<FlowPolygon*>(i)->changeColor(color);
+        }
+    }
 }

@@ -8,6 +8,7 @@
 #include <math.h>
 #include <cassert>
 
+#include "mainwindow.h"
 #include "flowline.h"
 #include "canvas.h"
 #include "textfield.h"
@@ -15,7 +16,7 @@
 Canvas::Canvas(QMenu *itemMenu, QWidget *parrent) :
     QGraphicsScene{parrent}, itemMenu{itemMenu},
     mode{MoveItem}, itemType{FlowItem::Type::None},
-    activeItem{nullptr}
+    activeItem{nullptr}, itemColor(Qt::white), itemPen{QPen(Qt::black, 1)}
 {
     resize(1000, 1000);
     setBackgroundBrush(Qt::white);
@@ -28,7 +29,7 @@ void Canvas::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     switch (mode) {
         case InsertItem:
             qDebug() << "inserting item";
-            item = new FlowPolygon(itemType, QBrush(Qt::white));
+            item = new FlowPolygon(itemType, itemColor, itemPen);
             addItem(item);
             item->setPos(event->scenePos());
             getInside(item);
@@ -76,6 +77,7 @@ void Canvas::mousePressEvent(QGraphicsSceneMouseEvent *event) {
         case InsertLine:
             qDebug() << "inserting line";
             arrow = new FlowLine(itemType == FlowItem::Type::Arrow,
+                                 itemPen,
                                  event->scenePos(),event->scenePos());
             addItem(arrow);
             break;
@@ -259,4 +261,27 @@ void Canvas::resize(int w, int h) {
     addLine(width(), 0, width(), height(), QPen(QBrush(Qt::blue),2));
     addLine(width(), height(), 0, height(),QPen(QBrush(Qt::blue),2));
     addLine(0, height(), 0, 0, QPen(QBrush(Qt::blue),2));
+}
+
+void Canvas::penWidthChanged(int width) {
+    itemPen.setWidth(width);
+    borderButtonClicked();
+}
+
+void Canvas::penColorChanged(QColor color) {
+    itemPen.setColor(color);
+    borderButtonClicked();
+}
+
+void Canvas::borderButtonClicked() {
+    for (auto &i : selectedItems()) {
+        if (i->type() == FlowPolygon::Type) {
+            static_cast<FlowPolygon*>(i)->setPen(itemPen);
+        }
+        else if (i->type() == FlowLine::Type) {
+            if (itemPen.color() != Qt::white) {
+                static_cast<FlowLine*>(i)->setPen(itemPen);
+            }
+        }
+    }
 }

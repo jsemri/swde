@@ -7,7 +7,7 @@
 
 const qreal Pi = 3.14;
 
-FlowLine::FlowLine(bool arrowSet,
+FlowLine::FlowLine(bool arrowSet, QPen pen,
         QPointF beginPoint, QPointF endPoint,
         QGraphicsItem *parent) :
     QGraphicsLineItem(parent), arrowSet{arrowSet}
@@ -15,15 +15,14 @@ FlowLine::FlowLine(bool arrowSet,
     setLine(QLineF(beginPoint, endPoint));
     setFlag(QGraphicsItem::ItemIsMovable);
     setFlag(QGraphicsItem::ItemIsSelectable);
-    setPen(QPen(Qt::black, 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    setPen(pen);
 }
 
 FlowLine::FlowLine(FlowLine *fline) :
-    FlowLine{fline->arrowSet, fline->line().p1(), fline->line().p2()}
+    FlowLine{fline->arrowSet, fline->pen(), fline->line().p1(),
+             fline->line().p2()}
 {
-    qDebug() << "line position: " << fline->pos();
     setPos(fline->pos());
-    setPen(fline->pen());
 }
 
 QRectF FlowLine::boundingRect() const {
@@ -51,10 +50,8 @@ void FlowLine::paint(
         return;
     }
 
-    QPen myPen = pen();
-    myPen.setColor(Qt::black);
-    painter->setPen(myPen);
-    painter->setBrush(Qt::black);
+    painter->setPen(pen());
+    painter->setBrush(pen().color());
     if (arrowSet) {
         double alpha = ::acos(line().dx() / (line().length()+0.00001));
         if (line().dy() <= 0) {

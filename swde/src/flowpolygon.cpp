@@ -8,7 +8,7 @@
 #include "flowpolygon.h"
 
 FlowPolygon::FlowPolygon
-(FlowItem::Type type, QBrush brush, QGraphicsItem *parent) :
+(FlowItem::Type type, QColor color, QPen pen, QGraphicsItem *parent) :
     QGraphicsPolygonItem(parent), FlowItem{}, itemType{type}
 {
     QPainterPath path;
@@ -47,7 +47,8 @@ FlowPolygon::FlowPolygon
             ;
     }
     setPolygon(polyg);
-    setBrush(brush);
+    changeColor(color);
+    setPen(pen);
     setFlag(QGraphicsItem::ItemIsMovable);
     setFlag(QGraphicsItem::ItemIsSelectable);
     setFlag(QGraphicsItem::ItemSendsGeometryChanges);
@@ -55,11 +56,12 @@ FlowPolygon::FlowPolygon
 
 
 FlowPolygon::FlowPolygon(FlowPolygon *fpolyg) :
-    FlowPolygon{fpolyg->itemType, fpolyg->brush()}
+    FlowPolygon{fpolyg->itemType, fpolyg->brush().color(),
+                fpolyg->pen()}
 {
     polyg = fpolyg->polygon();
-    setPen(fpolyg->pen());
     setPolygon(polyg);
+    setBrush(fpolyg->brush());
     setPos(pos());
 }
 
@@ -76,15 +78,12 @@ QPixmap FlowPolygon::image() const
     return pixmap;
 }
 
-void FlowPolygon::changeBrush(QBrush brush) {
+void FlowPolygon::changeColor(QColor color) {
     // change color and set brush gradient
-    /*
-    QRadialGradient gradient(QPointF(0,0), 250);
+    QLinearGradient gradient(0,0,0,45);
     gradient.setColorAt(0, color);
     gradient.setColorAt(1, Qt::white);
-    QBrush brush(gradient);
-    */
-    setBrush(brush);
+    setBrush(gradient);
 }
 
 void FlowPolygon::changeSize(qreal xratio, qreal yratio) {

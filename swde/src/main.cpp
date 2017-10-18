@@ -4,9 +4,8 @@
 
 // goals:
 //      toolbar:
-//          <!> brush, border
-//          <!> text size, bold, italic, underline
-//      export, undo, save, open, new
+//          <!> text size, bold, italic, underline (text)
+//      new, save, open, export, very simple undo
 
 int main(int argc, char *argv[])
 {

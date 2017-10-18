@@ -30,6 +30,9 @@ private:
     void createToolbox();
     void createToolbars();
     void createMenus();
+    QIcon createColorIcon(QColor color);
+    QIcon createBorderIcon(QColor color, int width);
+    QMenu *createColorMenu(const char *slot, QColor defaultColor);
 
     void keyPressEvent(QKeyEvent *event) override;
     void createItemButton(
@@ -56,6 +59,10 @@ private:
     QToolBar *itemToolbar;
     QToolBar *aspectToolbar;
 
+    QToolButton *colorButton;
+    QToolButton *borderColorButton;
+    QComboBox *borderWidthCombo;
+
     // actions
     QAction *exitAction;
     QAction *deleteAction;
@@ -64,6 +71,10 @@ private:
 
     QAction *putFrontAction;
     QAction *putBackAction;
+
+    QAction *changeColorAction;
+    QAction *changeBorderColorAction;
+    QAction *changeBorderWidthAction;
 
 
 private slots:
@@ -78,6 +89,9 @@ private slots:
     void copy();
     void paste();
     void scaleChanged(const QString &scale);
+    void changeColor();
+    void colorButtonTriggered();
+    void changeBorderColor();
 };
 
 #endif // MAINWINDOW_H
