@@ -7,6 +7,7 @@
 #include "flowitem.h"
 
 class Canvas;
+class NewFileDialog;
 class QGraphicsView;
 class QHBoxLayout;
 class QToolBox;
@@ -17,6 +18,7 @@ class QFontComboBox;
 class QGraphicsTextItem;
 class QGraphicsItem;
 class QGridLayout;
+class QMessageBox;
 
 class MainWindow : public QMainWindow
 {
@@ -30,8 +32,9 @@ private:
     void createToolbox();
     void createToolbars();
     void createMenus();
-    QIcon createColorIcon(QColor color);
-    QIcon createBorderIcon(QColor color, int width);
+    void createDialogs();
+    static QIcon createColorIcon(QColor color);
+    static QIcon createBorderIcon(QColor color, int width);
     QMenu *createColorMenu(const char *slot, QColor defaultColor);
 
     void keyPressEvent(QKeyEvent *event) override;
@@ -45,6 +48,9 @@ private:
     Canvas *canvas;
     QGraphicsItem *itemCopy;
 
+    NewFileDialog *newDialog;
+    QMessageBox *msgBox;
+
     // top menus
     QMenu *fileMenu;
     QMenu *editMenu;
@@ -54,6 +60,7 @@ private:
     QButtonGroup *itemButtons;
 
     // top bar
+    QToolBar *fileToolbar;
     QToolBar *editToolbar;
     QToolBar *textToolbar;
     QToolBar *itemToolbar;
@@ -82,6 +89,9 @@ private:
     QAction *toItalicAction;
     QAction *toUnderlineAction;
 
+    QAction *newAction;
+    QAction *loadAction;
+    QAction *saveAction;
 
 private slots:
     void itemButtonClicked(int id);
@@ -89,17 +99,23 @@ private slots:
     void itemInserted(FlowPolygon *item);
     void itemSelected(QGraphicsItem *item);
     void arrowInserted();
+
     void deleteItem();
     void putFront();
     void putBack();
     void copy();
     void paste();
     void scaleChanged(const QString &scale);
+
     void changeColor();
     void colorButtonTriggered();
     void changeBorderColor();
     void fontSizeChanged(QString);
     void changeFont();
+
+    void newFile();
+    void loadFile();
+    void saveFile();
 };
 
 #endif // MAINWINDOW_H

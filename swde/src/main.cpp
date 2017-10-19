@@ -3,8 +3,7 @@
 
 
 // goals:
-//      toolbar:
-//          <!> text size, bold, italic, underline (text)
+//      font color
 //      new, save, open, export, very simple undo
 
 int main(int argc, char *argv[])

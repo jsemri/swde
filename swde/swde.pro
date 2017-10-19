@@ -19,14 +19,16 @@ SOURCES +=   \
     src/flowpolygon.cpp \
     src/textfield.cpp \
     src/flowline.cpp \
-    src/flowitem.cpp
+    src/flowitem.cpp \
+    src/newfiledialog.cpp
 
 HEADERS  += src/mainwindow.h \
    src/canvas.h \
    src/flowpolygon.h \
     src/textfield.h \
     src/flowline.h \
-    src/flowitem.h
+    src/flowitem.h \
+    src/newfiledialog.h
 
 RESOURCES += images.qrc
 

@@ -15,6 +15,9 @@
 #include <QButtonGroup>
 #include <QMenuBar>
 #include <QMenu>
+#include <QDialog>
+#include <QMessageBox>
+#include <QFileDialog>
 
 #include <algorithm>
 #include <cassert>
@@ -25,6 +28,7 @@
 #include "flowpolygon.h"
 #include "flowline.h"
 #include "textfield.h"
+#include "newfiledialog.h"
 
 #define ICON_X 80
 #define ICON_Y 60
@@ -58,6 +62,7 @@ MainWindow::MainWindow(QWidget *parent) :
     view->setFrameStyle(QFrame::Box);
     view->setFrameShadow(QFrame::Raised);
 
+    createDialogs();
     createToolbars();
     layout = new QHBoxLayout();
     layout->addWidget(toolbox);
@@ -114,6 +119,13 @@ void MainWindow::createActions()
                                     tr("Underline"), this);
     toUnderlineAction->setCheckable(true);
     connect(toUnderlineAction, SIGNAL(triggered()), this, SLOT(changeFont()));
+
+    newAction = new QAction(QIcon(":/images/new.png"), tr("new"), this);
+    connect(newAction, SIGNAL(triggered(bool)), this, SLOT(newFile()));
+    loadAction = new QAction(QIcon(":/images/load.png"), tr("load"), this);
+    connect(loadAction, SIGNAL(triggered(bool)), this, SLOT(loadFile()));
+    saveAction = new QAction(QIcon(":/images/save.png"), tr("save"), this);
+    connect(saveAction, SIGNAL(triggered(bool)), this, SLOT(saveFile()));
 }
 
 // create buttons on the right
@@ -140,7 +152,7 @@ void MainWindow::createToolbox()
     toolbox->setSizePolicy(QSizePolicy(QSizePolicy::Maximum,
                                        QSizePolicy::Ignored));
     toolbox->setMinimumWidth(widget->sizeHint().width());
-    toolbox->addItem(widget, tr("afsd"));
+    toolbox->addItem(widget, tr("Components"));
     QColor col(3, 146, 13);
     toolbox->setPalette(QPalette(col));
     toolbox->setFrameShape(QFrame::WinPanel);
@@ -150,9 +162,19 @@ void MainWindow::createMenus()
 {
     fileMenu = menuBar()->addMenu(tr("&File"));
     fileMenu->addAction(exitAction);
+    fileMenu->addAction(newAction);
+    fileMenu->addAction(saveAction);
+    fileMenu->addAction(loadAction);
 }
 
 void MainWindow::createToolbars() {
+
+    // save, load, new
+    fileToolbar = addToolBar("file");
+    fileToolbar->addAction(newAction);
+    fileToolbar->addAction(loadAction);
+    fileToolbar->addAction(saveAction);
+
     editToolbar = addToolBar(tr("Edit Item"));
     editToolbar->addAction(deleteAction);
     editToolbar->addAction(copyAction);
@@ -475,4 +497,54 @@ void MainWindow::changeFont() {
 void MainWindow::fontSizeChanged(QString s) {
     Q_UNUSED(s);
     changeFont();
+}
+
+void MainWindow::createDialogs() {
+    newDialog = new NewFileDialog(this);
+    msgBox = new QMessageBox(this);
+    msgBox->setWindowTitle("Warning");
+    msgBox->setText("The file has been modified.");
+    msgBox->setInformativeText("Do you want to save chages?");
+    msgBox->setStandardButtons(QMessageBox::Cancel | QMessageBox::Save |
+                                  QMessageBox::Discard);
+    msgBox->setDefaultButton(QMessageBox::Cancel);
+}
+
+void MainWindow::newFile() {
+    if (newDialog->exec() == QDialog::Accepted) {
+        if (canvas->items().count() > 4) {
+            // show warning dialog
+            int ret = msgBox->exec();
+            if (ret == QMessageBox::Cancel) {
+                return;
+            }
+            else if (ret == QMessageBox::Save) {
+                // TODO call save
+                // saveFile();
+            }
+        }
+        canvas->resize(newDialog->getHeight(), newDialog->getWidth());
+    }
+}
+
+void MainWindow::loadFile() {
+    QString loadFile = QFileDialog::getOpenFileName(this, tr("Load File"));
+    try {
+        //canvas->load(loadFile, canvas);
+    }
+    catch (...) {
+        QMessageBox msg;
+        msg.critical(0, "Error", "Cannot load file.");
+    }
+}
+
+void MainWindow::saveFile() {
+    QString saveFile = QFileDialog::getSaveFileName(this, tr("Save File"));
+    try {
+        //canvas->save(saveFile, canvas);
+    }
+    catch (...) {
+        QMessageBox msg;
+        msg.critical(0, "Error", "Cannot save file.");
+    }
 }
