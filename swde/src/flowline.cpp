@@ -4,6 +4,7 @@
 
 #include <math.h>
 #include "flowline.h"
+#include "aux.h"
 
 const qreal Pi = 3.14;
 
@@ -86,3 +87,65 @@ QPixmap FlowLine::image() const {
 
     return pixmap;
 }
+
+void FlowLine::serialize(std::ofstream &out) const {
+    print(out, "FlowLine");
+    print(out, "pos", x(), y(), zValue());
+    print(out, "border", COLOR2STR(pen().color()), pen().width());
+    print(out, "hasarrow", (int)arrowSet);
+    print(out, "points", line().p1().x(), line().p1().y(),
+          line().p2().x(), line().p2().y());
+}
+
+FlowLine::FlowLine(std::istringstream &data) :
+    QGraphicsLineItem(0)
+{
+    qreal x, y, z, x1, x2, y1, y2;
+    std::map<std::string, int> vmap = {
+        {"pos",0}, {"border", 0}, {"hasarrow", 0}, {"points", 0}};
+    QPen pen;
+    int arrow = 0;
+
+    std::string buf;
+    while (getline(data, buf)) {
+        std::istringstream ss{buf};
+        std::string first; ss >> first;
+        if (first == "pos") {
+            ss >> x >> y >> z;
+        }
+        else if (first == "border") {
+            int width;
+            std::string color;
+            ss >> color >> width;
+            pen.setColor(QColor(color.c_str()));
+            pen.setWidth(width);
+        }
+        else if (first == "points") {
+            ss >> x1 >> y1 >> x2 >> y2;
+        }
+        else if (first == "hasarrow") {
+            ss >> arrow;
+        }
+        else {
+            throw std::runtime_error("Invalid FlowLine syntax.");
+            qDebug() << QString(first.c_str());
+        }
+        vmap[first]++;
+    }
+
+    for (auto &i : vmap) {
+        if (i.second != 1) {
+            qDebug() << QString(i.first.c_str()) << i.second;
+            throw std::runtime_error("Not all line sections are competed.");
+        }
+    }
+
+    setLine(QLineF(x1, y1, x2, y2));
+    arrowSet = arrow;
+    setFlag(QGraphicsItem::ItemIsMovable);
+    setFlag(QGraphicsItem::ItemIsSelectable);
+    setPen(pen);
+    setPos(x,y);
+    setZValue(z);
+}
+

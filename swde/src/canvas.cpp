@@ -5,18 +5,26 @@
 #include <QDebug>
 #include <QTextCursor>
 #include <QGraphicsView>
-#include <math.h>
+
+#include <fstream>
+#include <sstream>
+#include <iostream>
+#include <map>
 #include <cassert>
+
+#include <math.h>
 
 #include "mainwindow.h"
 #include "flowline.h"
 #include "canvas.h"
 #include "textfield.h"
+#include "aux.h"
 
 Canvas::Canvas(QMenu *itemMenu, QWidget *parrent) :
     QGraphicsScene{parrent}, itemMenu{itemMenu},
     mode{MoveItem}, itemType{FlowItem::Type::None},
-    activeItem{nullptr}, itemColor(Qt::white), itemPen{QPen(Qt::black, 1)}
+    activeItem{nullptr}, itemColor(Qt::white), itemPen{QPen(Qt::black, 1)},
+    ZValue{0}
 {
     textFont.setPointSize(12);
     resize(1000, 1000);
@@ -33,6 +41,7 @@ void Canvas::mousePressEvent(QGraphicsSceneMouseEvent *event) {
             item = new FlowPolygon(itemType, itemColor, itemPen);
             addItem(item);
             item->setPos(event->scenePos());
+            item->setZValue(getZValue());
             getInside(item);
             emit itemInserted(item);
             break;
@@ -81,11 +90,12 @@ void Canvas::mousePressEvent(QGraphicsSceneMouseEvent *event) {
                                  itemPen,
                                  event->scenePos(),event->scenePos());
             addItem(arrow);
+            arrow->setZValue(getZValue());
             break;
         case InsertText:
             qDebug() << "inserting text";
             text = new TextField();
-            text->setZValue(1001);
+            text->setZValue(1001 + getZValue());
             text->setFont(textFont);
             text->setTextInteractionFlags(Qt::TextEditorInteraction);
             addItem(text);
@@ -233,6 +243,11 @@ void Canvas::pasteItem(QGraphicsItem *itemCopy) {
     }
     else if (itemCopy->type() == TextField::Type) {
         res = new TextField(static_cast<TextField*>(itemCopy));
+        connect(static_cast<TextField*>(res), SIGNAL(lostFocus(TextField*)),
+                this, SLOT(editorLostFocus(TextField*)));
+        connect(static_cast<TextField*>(res),
+                SIGNAL(selectedChange(QGraphicsItem*)), this,
+                SIGNAL(itemSelected(QGraphicsItem*)));
     }
 
     addItem(res);
@@ -297,4 +312,131 @@ void Canvas::borderButtonClicked() {
             }
         }
     }
+}
+
+void Canvas::save(const QString &file) {
+    std::ofstream out{file.toUtf8().constData()};
+    if (out.is_open() == false) {
+        throw 1;
+    }
+
+    print(out, "width", width(), "height", height());
+    for (auto & item : items()) {
+        if (item->type() == FlowLine::Type) {
+            static_cast<FlowLine*>(item)->serialize(out);
+        }
+        else if (item->type() == TextField::Type) {
+            static_cast<TextField*>(item)->serialize(out);
+        }
+        else if (item->type() == FlowPolygon::Type) {
+            static_cast<FlowPolygon*>(item)->serialize(out);
+        }
+    }
+
+    out.close();
+}
+
+void Canvas::load(const QString &file) {
+    std::ifstream input{file.toUtf8().constData()};
+    if (input.is_open() == false) {
+        throw std::runtime_error("Cannot open file");
+    }
+
+    std::string buf;
+    std::string databuf, curItem;
+    int width, height;
+    int state = 0;
+    QList<QGraphicsItem*> itemList;
+
+    while (getline(input, buf)) {
+        std::istringstream ss(buf);
+        std::string first; ss >> first;
+        switch(state) {
+            case 0:
+                if (first == "width") {
+                    ss >> width >> first >> height;
+                    state = 1;
+                }
+                else {
+                    throw std::runtime_error("syntax: width required");
+                }
+
+                break;
+            case 1:
+                if (first != "FlowPolygon" && first != "TextField" &&
+                    first != "FlowLine")
+                {
+                    throw std::runtime_error("syntax: item keyword");
+                }
+                state = 2;
+                curItem = first;
+                break;
+            case 2:
+                if (first != "FlowPolygon" && first != "TextField" &&
+                    first != "FlowLine")
+                {
+                    // read till next item
+                    databuf += buf + "\n";
+                }
+                else {
+                    // create item
+                    std::istringstream ss{databuf};
+                    QGraphicsItem *item;
+                    if (curItem == "FlowPolygon") {
+                        qDebug() << "loading polygon";
+                        item = new FlowPolygon(ss);
+                    }
+                    else if (curItem == "FlowLine") {
+                        item = new FlowLine(ss);
+                    }
+                    else if (curItem == "TextField") {
+                        item = new TextField(ss);
+                    }
+                    else {
+                        qDebug() << QString(curItem.c_str());
+                        assert(false);
+                    }
+                    itemList.append(item);
+                    databuf.clear();
+                    curItem = first;
+                }
+                break;
+            default:
+                throw std::runtime_error("invalid syntax!");
+        }
+    }
+
+    if (databuf != "") {
+        // create item
+        std::istringstream ss{databuf};
+        QGraphicsItem *item;
+        if (curItem == "FlowPolygon") {
+            qDebug() << "loading polygon";
+            item = new FlowPolygon(ss);
+        }
+        else if (curItem == "FlowLine") {
+            item = new FlowLine(ss);
+            connect(static_cast<TextField*>(item), SIGNAL(lostFocus(TextField*)),
+                    this, SLOT(editorLostFocus(TextField*)));
+            connect(static_cast<TextField*>(item),
+                    SIGNAL(selectedChange(QGraphicsItem*)), this,
+                    SIGNAL(itemSelected(QGraphicsItem*)));
+        }
+        else if (curItem == "TextField") {
+            item = new TextField(ss);
+        }
+        else {
+            qDebug() << QString(curItem.c_str());
+            assert(false);
+        }
+        itemList.append(item);
+    }
+
+    qDebug() << "done with parsing";
+    resize(width, height);
+    for (auto &i : itemList) {
+        addItem(i);
+    }
+
+    input.close();
 }

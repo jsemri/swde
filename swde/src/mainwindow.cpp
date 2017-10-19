@@ -6,7 +6,6 @@
 #include <QDebug>
 #include <QPushButton>
 #include <QComboBox>
-#include <QFontComboBox>
 #include <QToolBar>
 #include <QKeyEvent>
 #include <QDesktopWidget>
@@ -519,32 +518,35 @@ void MainWindow::newFile() {
                 return;
             }
             else if (ret == QMessageBox::Save) {
-                // TODO call save
-                // saveFile();
+                saveFile();
             }
         }
-        canvas->resize(newDialog->getHeight(), newDialog->getWidth());
+        canvas->resize(newDialog->getWidth(), newDialog->getHeight());
     }
 }
 
 void MainWindow::loadFile() {
-    QString loadFile = QFileDialog::getOpenFileName(this, tr("Load File"));
+    QString loadFile = QFileDialog::getOpenFileName(this, tr("Load File"), "..");
     try {
-        //canvas->load(loadFile, canvas);
+        canvas->load(loadFile);
     }
-    catch (...) {
+    catch (std::exception &e) {
         QMessageBox msg;
-        msg.critical(0, "Error", "Cannot load file.");
+        msg.critical(0, "Error", QString(e.what()));
     }
 }
 
 void MainWindow::saveFile() {
-    QString saveFile = QFileDialog::getSaveFileName(this, tr("Save File"));
-    try {
-        //canvas->save(saveFile, canvas);
+    QString saveFile = QFileDialog::getSaveFileName(this, tr("Save File"), "..");
+    if (saveFile == "") {
+        return;
     }
-    catch (...) {
+
+    try {
+        canvas->save(saveFile);
+    }
+    catch (std::exception &e) {
         QMessageBox msg;
-        msg.critical(0, "Error", "Cannot save file.");
+        msg.critical(0, "Error", QString(e.what()));
     }
 }

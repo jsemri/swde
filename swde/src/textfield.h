@@ -5,6 +5,8 @@
 #include <QGraphicsTextItem>
 #include <QPixmap>
 
+#include <sstream>
+
 #include "flowitem.h"
 
 class QGraphicsScene;
@@ -20,9 +22,11 @@ public:
 
     TextField(QGraphicsItem *parent = 0);
     TextField(TextField *textField);
+    TextField(std::istringstream &data);
 
     int type() const override {return Type;}
     QPixmap image() const override;
+    void serialize(std::ofstream &out) const override;
 
 signals:
     void lostFocus(TextField *textField);

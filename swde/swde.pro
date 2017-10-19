@@ -28,7 +28,8 @@ HEADERS  += src/mainwindow.h \
     src/textfield.h \
     src/flowline.h \
     src/flowitem.h \
-    src/newfiledialog.h
+    src/newfiledialog.h \
+    src/aux.h
 
 RESOURCES += images.qrc
 

@@ -34,10 +34,12 @@ private:
     QColor itemColor;
     QPen itemPen;
     QFont textFont;
+    qreal ZValue;
 
     void getInside(QGraphicsItem *item) const;
     QPointF getInside(QPointF point) const;
     bool isInside(QPointF point) const;
+    qreal getZValue() { ZValue += 0.01; return ZValue;}
 
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
@@ -50,6 +52,8 @@ public:
     void setFont(const QFont &font);
     void setItemColor(QColor color) { itemColor = color; }
     QPen pen() const { return itemPen; }
+    void save(const QString &file);
+    void load(const QString &file);
 
 public slots:
     void setMode(Mode m = MoveItem) { mode = m; }

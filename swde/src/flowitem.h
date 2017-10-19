@@ -3,6 +3,7 @@
 
 #include <QMap>
 #include <QPixmap>
+#include <fstream>
 
 class FlowItem {
 public:
@@ -15,6 +16,7 @@ public:
     FlowItem() = default;
     virtual ~FlowItem() = default;
     virtual QPixmap image() const = 0;
+    virtual void serialize(std::ofstream &out) const = 0;
 };
 
 

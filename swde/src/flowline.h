@@ -4,6 +4,8 @@
 #include <QGraphicsLineItem>
 #include <QPixmap>
 
+#include <sstream>
+
 #include "flowitem.h"
 
 class QGraphicsPolygonItem;
@@ -22,6 +24,7 @@ public:
              QPointF beginPoint = QPoint(), QPointF endPoint = QPoint(),
              QGraphicsItem *parent = 0);
     FlowLine(FlowLine *fline);
+    FlowLine(std::istringstream &data);
 
     int type() const override { return Type; }
     QRectF boundingRect() const override;
@@ -36,6 +39,7 @@ public:
     }
 
     QPixmap image() const override;
+    void serialize(std::ofstream &out) const override;
 
 protected:
     void paint(
