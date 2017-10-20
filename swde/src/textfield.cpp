@@ -2,6 +2,8 @@
 #include <QPainter>
 #include <QDebug>
 
+#include <iostream>
+
 #include "aux.h"
 #include "textfield.h"
 #include "canvas.h"
@@ -9,6 +11,7 @@
 TextField::TextField(QGraphicsItem *parent) :
     QGraphicsTextItem{parent}
 {
+    setDefaultTextColor(Qt::black);
     setFlag(QGraphicsItem::ItemIsMovable);
     setFlag(QGraphicsItem::ItemIsSelectable);
 }
@@ -17,6 +20,7 @@ TextField::TextField(TextField *textField) :
     TextField{}
 {
     setFont(textField->font());
+    setDefaultTextColor(Qt::black);
     setPlainText(textField->toPlainText());
     setPos(textField->pos());
 }
@@ -69,20 +73,26 @@ TextField::TextField(std::istringstream &data) {
             ss >> x >> y >> z;
         }
         else if (first == "text") {
-            std::string str;
-            ss >> str;
+            std::string str = ss.str();
+            str = str.substr(str.find('"'));
+
+            while (getline(data, buf)) {
+                str += "\n" + buf;
+            }
+
             std::string text;
-            for (size_t i = 0; i < str.length(); i+=2) {
-                std::string s = str.substr(i,2);
-                char byte = (char)(int)strtol(s.c_str(), 0, 16);
-                text.push_back(byte);
+            // ignore first and last character
+            for (size_t i = 1; i < str.length()-1; i++) {
+                if (str[i] != '\\') {
+                    text.push_back(str[i]);
+                }
             }
             setPlainText(QString(text.c_str()));
         }
         else if (first == "font") {
             int size, bold, italic, underline;
             ss >> size >> bold >> italic >> underline;
-            font.setPixelSize(size);
+            font.setPointSize(size);
             font.setBold(bold);
             font.setItalic(italic);
             font.setUnderline(underline);
@@ -104,21 +114,29 @@ TextField::TextField(std::istringstream &data) {
 
     setFlag(QGraphicsItem::ItemIsMovable);
     setFlag(QGraphicsItem::ItemIsSelectable);
+    setDefaultTextColor(Qt::black);
     setPos(x,y);
     setZValue(z);
+}
+
+static std::string escapeQuotes(const std::string &str) {
+    std::string res;
+    for (auto c : str) {
+        if (c == '"') {
+            res.push_back('\\');
+        }
+        res.push_back(c);
+    }
+    return res;
 }
 
 void TextField::serialize(std::ofstream &out) const {
     print(out, "TextField");
     print(out, "pos", x(), y(), zValue());
-    std::string text = toPlainText().toUtf8().constData();
-    out << "text ";
-    for (int i = 0; i < text.length(); i++) {
-        out << std::hex << int(text[i]);
-    }
-    out << "\n";
-    qDebug() << font().pointSize();
     int size = font().pointSize();
     print(out, "font", std::to_string(size), font().bold(), font().italic(),
           font().underline());
+    std::string text = "\"" + escapeQuotes(toPlainText().toUtf8().constData())
+                       + "\"";
+    print(out, "text", text);
 }

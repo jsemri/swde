@@ -100,7 +100,6 @@ void Canvas::mousePressEvent(QGraphicsSceneMouseEvent *event) {
             text->setTextInteractionFlags(Qt::TextEditorInteraction);
             addItem(text);
             text->setPos(event->scenePos());
-            text->setDefaultTextColor(Qt::black);
             connect(text, SIGNAL(lostFocus(TextField*)), this,
                     SLOT(editorLostFocus(TextField*)));
             connect(text, SIGNAL(selectedChange(QGraphicsItem*)), this,

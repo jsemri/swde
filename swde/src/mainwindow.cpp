@@ -527,7 +527,18 @@ void MainWindow::newFile() {
 
 void MainWindow::loadFile() {
     QString loadFile = QFileDialog::getOpenFileName(this, tr("Load File"), "..");
+    if (loadFile == "") {
+        return;
+    }
+
     try {
+        int ret = msgBox->exec();
+        if (ret == QMessageBox::Cancel) {
+            return;
+        }
+        else if (ret == QMessageBox::Save) {
+            saveFile();
+        }
         canvas->load(loadFile);
     }
     catch (std::exception &e) {
