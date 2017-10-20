@@ -22,7 +22,7 @@
 
 Canvas::Canvas(QMenu *itemMenu, QWidget *parrent) :
     QGraphicsScene{parrent}, itemMenu{itemMenu},
-    mode{MoveItem}, itemType{FlowItem::Type::None},
+    modified{0}, mode{MoveItem}, itemType{FlowItem::Type::None},
     activeItem{nullptr}, itemColor(Qt::white), itemPen{QPen(Qt::black, 1)},
     ZValue{0}
 {
@@ -59,6 +59,7 @@ void Canvas::mousePressEvent(QGraphicsSceneMouseEvent *event) {
                         qDebug() << "switched to resize mode";
                         mode = ResizeItem;
                         activeItem = it;
+                        modified = true;
                         return;
                     }
                 }
@@ -110,8 +111,9 @@ void Canvas::mousePressEvent(QGraphicsSceneMouseEvent *event) {
         default:
             qDebug() << "undefined operation";
             QGraphicsScene::mousePressEvent(event);
+            return;
     };
-
+    modified = true;
 }
 
 void Canvas::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
@@ -316,9 +318,10 @@ void Canvas::borderButtonClicked() {
 void Canvas::save(const QString &file) {
     std::ofstream out{file.toUtf8().constData()};
     if (out.is_open() == false) {
-        throw 1;
+        throw std::runtime_error("Cannot open file");
     }
 
+    modified = false;
     print(out, "width", width(), "height", height());
     for (auto & item : items()) {
         if (item->type() == FlowLine::Type) {
@@ -436,6 +439,6 @@ void Canvas::load(const QString &file) {
     for (auto &i : itemList) {
         addItem(i);
     }
-
+    modified = false;
     input.close();
 }

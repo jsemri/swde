@@ -14,5 +14,7 @@
         <file>images/new.png</file>
         <file>images/save.png</file>
         <file>images/load.png</file>
+        <file>images/saveas.png</file>
+        <file>images/topng.png</file>
     </qresource>
 </RCC>

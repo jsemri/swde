@@ -24,6 +24,7 @@ public:
 private:
     QMenu *itemMenu;
 
+    bool modified;
     Mode mode;
     FlowItem::Type itemType;
 
@@ -54,6 +55,8 @@ public:
     QPen pen() const { return itemPen; }
     void save(const QString &file);
     void load(const QString &file);
+    bool isModified() const { return modified; }
+    void setModified(bool m) { modified = m; }
 
 public slots:
     void setMode(Mode m = MoveItem) { mode = m; }

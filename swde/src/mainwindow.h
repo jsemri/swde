@@ -35,18 +35,21 @@ private:
     void createDialogs();
     static QIcon createColorIcon(QColor color);
     static QIcon createBorderIcon(QColor color, int width);
-    QMenu *createColorMenu(const char *slot, QColor defaultColor);
+    QMenu *createColorMenu(const char *slot, const QList<QColor> &colors,
+                           QColor defaultColor);
 
     void keyPressEvent(QKeyEvent *event) override;
     void createItemButton(
             QGridLayout *gLayout, FlowItem::Type type, QString statusTip);
 
     static QWidget *widgetLayout(QLayout *layout);
+    bool unsavedChangesWarning();
 
     QHBoxLayout *layout;
     QGraphicsView *view;
     Canvas *canvas;
     QGraphicsItem *itemCopy;
+    QString filename;
 
     NewFileDialog *newDialog;
     QMessageBox *msgBox;
@@ -92,6 +95,8 @@ private:
     QAction *newAction;
     QAction *loadAction;
     QAction *saveAction;
+    QAction *saveAsAction;
+    QAction *toPngAction;
 
 private slots:
     void itemButtonClicked(int id);
@@ -116,6 +121,9 @@ private slots:
     void newFile();
     void loadFile();
     void saveFile();
+    void saveFileAs();
+    void toPng();
+    virtual void closeEvent(QCloseEvent *event) override;
 };
 
 #endif // MAINWINDOW_H

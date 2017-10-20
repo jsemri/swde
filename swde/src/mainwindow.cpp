@@ -33,7 +33,7 @@
 #define ICON_Y 60
 
 MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent), itemCopy{0}
+    QMainWindow(parent), itemCopy{0}, filename(QString(""))
 {
     createActions();
     createMenus();
@@ -125,6 +125,12 @@ void MainWindow::createActions()
     connect(loadAction, SIGNAL(triggered(bool)), this, SLOT(loadFile()));
     saveAction = new QAction(QIcon(":/images/save.png"), tr("save"), this);
     connect(saveAction, SIGNAL(triggered(bool)), this, SLOT(saveFile()));
+    saveAsAction = new QAction(QIcon(":/images/saveas.png"), tr("save as"),
+                               this);
+    connect(saveAsAction, SIGNAL(triggered(bool)), this, SLOT(saveFileAs()));
+    toPngAction = new QAction(QIcon(":/images/topng.png"), tr("export to png"),
+                              this);
+    connect(toPngAction, SIGNAL(triggered(bool)), this, SLOT(toPng()));
 }
 
 // create buttons on the right
@@ -163,7 +169,9 @@ void MainWindow::createMenus()
     fileMenu->addAction(exitAction);
     fileMenu->addAction(newAction);
     fileMenu->addAction(saveAction);
+    fileMenu->addAction(saveAsAction);
     fileMenu->addAction(loadAction);
+    fileMenu->addAction(toPngAction);
 }
 
 void MainWindow::createToolbars() {
@@ -173,6 +181,8 @@ void MainWindow::createToolbars() {
     fileToolbar->addAction(newAction);
     fileToolbar->addAction(loadAction);
     fileToolbar->addAction(saveAction);
+    fileToolbar->addAction(saveAsAction);
+    fileToolbar->addAction(toPngAction);
 
     editToolbar = addToolBar(tr("Edit Item"));
     editToolbar->addAction(deleteAction);
@@ -198,7 +208,12 @@ void MainWindow::createToolbars() {
     // shape color
     colorButton = new QToolButton;
     colorButton->setPopupMode(QToolButton::MenuButtonPopup);
-    colorButton->setMenu(createColorMenu(SLOT(changeColor()), Qt::white));
+    QList<QColor> colors;
+    colors << Qt::white << Qt::lightGray << QColor("#abcabc")
+           << QColor("#ff9999") << QColor("#cc99ff") << QColor("#ff6666")
+           << QColor("#b2ff66") << QColor("#9999ff");// << QColor("");
+    colorButton->setMenu(createColorMenu(SLOT(changeColor()), colors,
+                                         Qt::white));
     changeColorAction = colorButton->menu()->defaultAction();
     colorButton->setIcon(createColorIcon(Qt::white));
     connect(colorButton, SIGNAL(clicked()), this,
@@ -207,7 +222,11 @@ void MainWindow::createToolbars() {
     // border color
     borderColorButton = new QToolButton;
     borderColorButton->setPopupMode(QToolButton::MenuButtonPopup);
-    borderColorButton->setMenu(createColorMenu(SLOT(changeBorderColor()), Qt::black));
+    colors.clear();
+    colors << Qt::black << Qt::lightGray << Qt::cyan << Qt::blue
+           << Qt::darkMagenta << Qt::red << QColor(255,128,0) << Qt::darkYellow;
+    borderColorButton->setMenu(createColorMenu(SLOT(changeBorderColor()), colors,
+                                               Qt::black));
     changeBorderColorAction = borderColorButton->menu()->defaultAction();
     borderColorButton->setIcon(createBorderIcon(Qt::black, 2));
     connect(borderColorButton, SIGNAL(clicked()), canvas,
@@ -279,11 +298,14 @@ void MainWindow::createItemButton(QGridLayout *gLayout, FlowItem::Type type,
     gLayout->addWidget(button, count, 0, Qt::AlignCenter);
 }
 
-QMenu *MainWindow::createColorMenu(const char *slot, QColor defaultColor)
+QMenu *MainWindow::createColorMenu(const char *slot,
+                                   const QList<QColor> &colors,
+                                   QColor defaultColor)
 {
-    QList<QColor> colors;
-    colors << Qt::black << Qt::white << Qt::lightGray << Qt::cyan << Qt::blue
-           << Qt::darkMagenta << Qt::red << QColor(255,128,0) << Qt::darkYellow;
+    //QList<QColor> colors;
+    //colors << Qt::black << Qt::white << Qt::lightGray << Qt::cyan << Qt::blue
+           //<< Qt::darkMagenta << Qt::red << QColor(255,128,0) << Qt::darkYellow;
+   // colors << Qt::black << Qt::white << Qt::lightGray << Qt::re
 
     QMenu *colorMenu = new QMenu(this);
     for (auto & i : colors) {
@@ -510,36 +532,27 @@ void MainWindow::createDialogs() {
 }
 
 void MainWindow::newFile() {
-    if (newDialog->exec() == QDialog::Accepted) {
-        if (canvas->items().count() > 4) {
-            // show warning dialog
-            int ret = msgBox->exec();
-            if (ret == QMessageBox::Cancel) {
-                return;
-            }
-            else if (ret == QMessageBox::Save) {
-                saveFile();
-            }
+    if (unsavedChangesWarning()) {
+        if (newDialog->exec() != QMessageBox::Cancel) {
+            filename = "";
+            canvas->setModified(false);
+            canvas->resize(newDialog->getWidth(), newDialog->getHeight());
         }
-        canvas->resize(newDialog->getWidth(), newDialog->getHeight());
     }
 }
 
 void MainWindow::loadFile() {
+    if (!unsavedChangesWarning()) {
+        return;
+    }
     QString loadFile = QFileDialog::getOpenFileName(this, tr("Load File"), "..");
     if (loadFile == "") {
         return;
     }
 
-    try {
-        int ret = msgBox->exec();
-        if (ret == QMessageBox::Cancel) {
-            return;
-        }
-        else if (ret == QMessageBox::Save) {
-            saveFile();
-        }
+    try {        
         canvas->load(loadFile);
+        filename = loadFile;
     }
     catch (std::exception &e) {
         QMessageBox msg;
@@ -547,8 +560,40 @@ void MainWindow::loadFile() {
     }
 }
 
+bool MainWindow::unsavedChangesWarning() {
+    if (canvas->isModified()) {
+        int ret = msgBox->exec();
+        if (ret == QMessageBox::Save) {
+            saveFile();
+        }
+        else if (ret == QMessageBox::Cancel) {
+            return false;
+        }
+    }
+    return true;
+}
+
 void MainWindow::saveFile() {
-    QString saveFile = QFileDialog::getSaveFileName(this, tr("Save File"), "..");
+    if (filename == "") {
+        filename = QFileDialog::getSaveFileName(this, tr("Save File"), "..");
+        if (filename == "") {
+            return;
+        }
+    }
+
+    try {
+        canvas->save(filename);
+        canvas->setModified(false);
+    }
+    catch (std::exception &e) {
+        QMessageBox msg;
+        msg.critical(0, "Error", QString(e.what()));
+    }
+}
+
+void MainWindow::saveFileAs() {
+    QString saveFile = QFileDialog::getSaveFileName(this, tr("Save File"),
+                                                    "..");
     if (saveFile == "") {
         return;
     }
@@ -559,5 +604,28 @@ void MainWindow::saveFile() {
     catch (std::exception &e) {
         QMessageBox msg;
         msg.critical(0, "Error", QString(e.what()));
+    }
+}
+
+void MainWindow::toPng() {
+    QString pngFile = QFileDialog::getSaveFileName(this, tr("Save File"),
+                                                   "..");
+    if (pngFile == "") {
+        return;
+    }
+
+    canvas->clearSelection();
+    QImage image(canvas->sceneRect().size().toSize(), QImage::Format_ARGB32);
+    image.fill(Qt::transparent);
+
+    QPainter painter(&image);
+    canvas->render(&painter);
+    image.save(pngFile);
+}
+
+void MainWindow::closeEvent(QCloseEvent *event) {
+    event->ignore();
+    if (unsavedChangesWarning()) {
+        event->accept();
     }
 }

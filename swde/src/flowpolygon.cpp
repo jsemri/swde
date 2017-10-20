@@ -31,7 +31,6 @@ FlowPolygon::FlowPolygon(FlowPolygon *fpolyg) :
 {
     polyg = fpolyg->polygon();
     setPolygon(polyg);
-    setBrush(fpolyg->brush());
     setPos(pos());
 }
 
@@ -152,11 +151,14 @@ QPixmap FlowPolygon::image() const
 
 void FlowPolygon::changeColor(QColor color) {
     // change color and set brush gradient
+    /*
     this->color = color;
     QLinearGradient gradient(0,0,0,45);
     gradient.setColorAt(0, color);
     gradient.setColorAt(1, Qt::white);
     setBrush(gradient);
+    */
+    setBrush(color);
 }
 
 void FlowPolygon::changeSize(qreal xratio, qreal yratio) {
@@ -181,5 +183,5 @@ void FlowPolygon::serialize(std::ofstream &out) const {
                    buildPolygon(itemType).boundingRect().height();
 
     print(out, "ratio", xratio, yratio);
-    print(out, "fill", COLOR2STR(color));
+    print(out, "fill", COLOR2STR(brush().color()));
 }

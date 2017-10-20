@@ -11,7 +11,6 @@ class FlowPolygon : public QGraphicsPolygonItem, public FlowItem
 private:
     FlowItem::Type itemType;
     QPolygonF polyg;
-    QColor color;
 
     static QPolygonF buildPolygon(FlowItem::Type itemType);
 
