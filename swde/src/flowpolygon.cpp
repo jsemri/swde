@@ -119,11 +119,13 @@ QPolygonF FlowPolygon::buildPolygon(FlowItem::Type itemType) {
             p = path.toFillPolygon();
             break;
         case FlowItem::Type::IO:
-            p << QPointF(60, -40)
-              << QPointF(35, 40)
-              << QPointF(-60, 40)
-              << QPointF(-35, -40)
-              << QPointF(60, -40);
+            p << QPointF(-50, 0)
+              << QPointF(-25, 40)
+              << QPointF(25, 40)
+              << QPointF(50, 0)
+              << QPointF(25, -40)
+              << QPointF(-25, -40)
+              << QPointF(-50, 0);
             break;
         case FlowItem::Type::Circle:
             path.addEllipse(-40, -40, 80, 80);
