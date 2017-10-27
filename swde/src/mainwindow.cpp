@@ -225,7 +225,8 @@ void MainWindow::createToolbars() {
     colors.clear();
     colors << Qt::black << Qt::lightGray << Qt::cyan << Qt::blue
            << Qt::darkMagenta << Qt::red << QColor(255,128,0) << Qt::darkYellow;
-    borderColorButton->setMenu(createColorMenu(SLOT(changeBorderColor()), colors,
+    borderColorButton->setMenu(createColorMenu(SLOT(changeBorderColor()),
+                                               colors,
                                                Qt::black));
     changeBorderColorAction = borderColorButton->menu()->defaultAction();
     borderColorButton->setIcon(createBorderIcon(Qt::black, 2));
@@ -235,7 +236,8 @@ void MainWindow::createToolbars() {
     // border width
     borderWidthCombo = new QComboBox;
     for (int i = 1; i < 9; i++) {
-        borderWidthCombo->addItem(createBorderIcon(Qt::black, i), QString().setNum(i), i);
+        borderWidthCombo->addItem(createBorderIcon(Qt::black, i),
+                                  QString().setNum(i), i);
     }
     borderWidthCombo->setCurrentIndex(1);
     connect(borderWidthCombo, SIGNAL(currentIndexChanged(int)),
@@ -302,11 +304,6 @@ QMenu *MainWindow::createColorMenu(const char *slot,
                                    const QList<QColor> &colors,
                                    QColor defaultColor)
 {
-    //QList<QColor> colors;
-    //colors << Qt::black << Qt::white << Qt::lightGray << Qt::cyan << Qt::blue
-           //<< Qt::darkMagenta << Qt::red << QColor(255,128,0) << Qt::darkYellow;
-   // colors << Qt::black << Qt::white << Qt::lightGray << Qt::re
-
     QMenu *colorMenu = new QMenu(this);
     for (auto & i : colors) {
         QAction *action = new QAction(this);
@@ -545,12 +542,12 @@ void MainWindow::loadFile() {
     if (!unsavedChangesWarning()) {
         return;
     }
-    QString loadFile = QFileDialog::getOpenFileName(this, tr("Load File"), "..");
+    QString loadFile = QFileDialog::getOpenFileName(this, tr("Load"), "..");
     if (loadFile == "") {
         return;
     }
 
-    try {        
+    try {
         canvas->load(loadFile);
         filename = loadFile;
     }
