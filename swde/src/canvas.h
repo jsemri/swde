@@ -41,6 +41,8 @@ private:
     QPointF getInside(QPointF point) const;
     bool isInside(QPointF point) const;
     qreal getZValue() { ZValue += 0.01; return ZValue;}
+    QGraphicsItem *
+    loadItem(const std::string &itemStr, const std::string &data);
 
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;

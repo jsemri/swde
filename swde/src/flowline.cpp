@@ -59,12 +59,13 @@ void FlowLine::paint(
             alpha = (Pi * 2) - alpha;
         }
         double beta = Pi/12;
-        int size = 15;
+        int size = 15 + pen().width()*2;
         QPointF p1, p2;
         p1 = line().p2() - QPointF(cos(alpha - beta) * size,
                                  sin(alpha - beta) * size);
         p2 = line().p2() - QPointF(sin(Pi/2 - alpha - beta) * size,
                                  cos(Pi/2 - alpha - beta) * size);
+
         arrowHead.clear();
         arrowHead << line().p2() << p1 << p2;
         painter->drawPolygon(arrowHead);

@@ -338,6 +338,33 @@ void Canvas::save(const QString &file) {
     out.close();
 }
 
+QGraphicsItem *Canvas::loadItem(
+        const std::string &itemStr, const std::string &data)
+{
+    std::istringstream ss{data};
+    QGraphicsItem *item;
+    if (itemStr == "FlowPolygon") {
+        item = new FlowPolygon(ss);
+    }
+    else if (itemStr == "FlowLine") {
+        item = new FlowLine(ss);
+    }
+    else if (itemStr == "TextField") {
+        item = new TextField(ss);
+        connect(static_cast<TextField*>(item), SIGNAL(lostFocus(TextField*)),
+                this, SLOT(editorLostFocus(TextField*)));
+        connect(static_cast<TextField*>(item),
+                SIGNAL(selectedChange(QGraphicsItem*)), this,
+                SIGNAL(itemSelected(QGraphicsItem*)));
+    }
+    else {
+        qDebug() << QString(itemStr.c_str());
+        assert(false);
+    }
+
+    return item;
+}
+
 void Canvas::load(const QString &file) {
     std::ifstream input{file.toUtf8().constData()};
     if (input.is_open() == false) {
@@ -382,23 +409,7 @@ void Canvas::load(const QString &file) {
                 }
                 else {
                     // create item
-                    std::istringstream ss{databuf};
-                    QGraphicsItem *item;
-                    if (curItem == "FlowPolygon") {
-                        qDebug() << "loading polygon";
-                        item = new FlowPolygon(ss);
-                    }
-                    else if (curItem == "FlowLine") {
-                        item = new FlowLine(ss);
-                    }
-                    else if (curItem == "TextField") {
-                        item = new TextField(ss);
-                    }
-                    else {
-                        qDebug() << QString(curItem.c_str());
-                        assert(false);
-                    }
-                    itemList.append(item);
+                    itemList.append(loadItem(curItem, databuf));
                     databuf.clear();
                     curItem = first;
                 }
@@ -409,32 +420,9 @@ void Canvas::load(const QString &file) {
     }
 
     if (databuf != "") {
-        // create item
-        std::istringstream ss{databuf};
-        QGraphicsItem *item;
-        if (curItem == "FlowPolygon") {
-            qDebug() << "loading polygon";
-            item = new FlowPolygon(ss);
-        }
-        else if (curItem == "FlowLine") {
-            item = new FlowLine(ss);
-            connect(static_cast<TextField*>(item), SIGNAL(lostFocus(TextField*)),
-                    this, SLOT(editorLostFocus(TextField*)));
-            connect(static_cast<TextField*>(item),
-                    SIGNAL(selectedChange(QGraphicsItem*)), this,
-                    SIGNAL(itemSelected(QGraphicsItem*)));
-        }
-        else if (curItem == "TextField") {
-            item = new TextField(ss);
-        }
-        else {
-            qDebug() << QString(curItem.c_str());
-            assert(false);
-        }
-        itemList.append(item);
+        itemList.append(loadItem(curItem, databuf));
     }
 
-    qDebug() << "done with parsing";
     resize(width, height);
     for (auto &i : itemList) {
         addItem(i);
