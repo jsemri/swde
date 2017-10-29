@@ -16,5 +16,6 @@
         <file>images/load.png</file>
         <file>images/saveas.png</file>
         <file>images/topng.png</file>
+        <file>images/exit.png</file>
     </qresource>
 </RCC>

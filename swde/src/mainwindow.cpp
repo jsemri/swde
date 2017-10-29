@@ -82,7 +82,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::createActions()
 {
-    exitAction = new QAction(tr("E&xit"), this);
+    exitAction = new QAction(QIcon(":/images/exit.png"), tr("E&xit"), this);
     connect(exitAction, SIGNAL(triggered()), this, SLOT(close()));
 
     deleteAction = new QAction(QIcon(":/images/delete.png"), tr("Delete"),
@@ -172,6 +172,11 @@ void MainWindow::createMenus()
     fileMenu->addAction(saveAsAction);
     fileMenu->addAction(loadAction);
     fileMenu->addAction(toPngAction);
+
+    QMenu *editMenu = menuBar()->addMenu(tr("&Edit"));
+    editMenu->addAction(deleteAction);
+    editMenu->addAction(copyAction);
+    editMenu->addAction(pasteAction);
 }
 
 void MainWindow::createToolbars() {
@@ -179,6 +184,7 @@ void MainWindow::createToolbars() {
     // save, load, new
     fileToolbar = addToolBar("file");
     fileToolbar->addAction(newAction);
+    fileToolbar->addAction(exitAction);
     fileToolbar->addAction(loadAction);
     fileToolbar->addAction(saveAction);
     fileToolbar->addAction(saveAsAction);
