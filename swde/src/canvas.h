@@ -8,6 +8,7 @@
 
 #include "flowpolygon.h"
 #include "flowitem.h"
+#include "command_manager.h"
 
 class Qmenu;
 class TextField;
@@ -36,6 +37,7 @@ private:
     QPen itemPen;
     QFont textFont;
     qreal ZValue;
+    CommandManager commands;
 
     void getInside(QGraphicsItem *item) const;
     QPointF getInside(QPointF point) const;
@@ -43,6 +45,8 @@ private:
     qreal getZValue() { ZValue += 0.01; return ZValue;}
     QGraphicsItem *
     loadItem(const std::string &itemStr, const std::string &data);
+    QGraphicsItem* copyItem(QGraphicsItem *itemCopy);
+    void addToHistory(Command *cmd);
 
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
@@ -59,6 +63,8 @@ public:
     void load(const QString &file);
     bool isModified() const { return modified; }
     void setModified(bool m) { modified = m; }
+    void undo();
+    void remove();
 
 public slots:
     void setMode(Mode m = MoveItem) { mode = m; }
@@ -66,13 +72,10 @@ public slots:
     void editorLostFocus(TextField *item);
     void penWidthChanged(int width);
     void penColorChanged(QColor color);
-    void borderButtonClicked();
+    void borderButtonClicked();    
 
 signals:
     void textInserted(QGraphicsTextItem *item);
-    void itemSelected(QGraphicsItem *item);
-    void itemInserted(FlowPolygon *item);
-    void arrowInserted();
 };
 
 #endif // CANVAS_H

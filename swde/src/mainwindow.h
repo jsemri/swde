@@ -27,6 +27,8 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+    void updateUndo(bool enabled);
+
 private:
     void createActions();
     void createToolbox();
@@ -80,6 +82,7 @@ private:
     QAction *deleteAction;
     QAction *copyAction;
     QAction *pasteAction;
+    QAction *undoAction;
 
     QAction *putFrontAction;
     QAction *putBackAction;
@@ -101,9 +104,6 @@ private:
 private slots:
     void itemButtonClicked(int id);
     void textInserted(QGraphicsTextItem *item);
-    void itemInserted(FlowPolygon *item);
-    void itemSelected(QGraphicsItem *item);
-    void arrowInserted();
 
     void deleteItem();
     void putFront();
@@ -123,6 +123,7 @@ private slots:
     void saveFile();
     void saveFileAs();
     void toPng();
+    void undo();
     virtual void closeEvent(QCloseEvent *event) override;
 };
 

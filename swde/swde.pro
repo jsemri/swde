@@ -20,7 +20,9 @@ SOURCES +=   \
     src/textfield.cpp \
     src/flowline.cpp \
     src/flowitem.cpp \
-    src/newfiledialog.cpp
+    src/newfiledialog.cpp \
+    src/command_manager.cpp \
+    src/commands.cpp
 
 HEADERS  += src/mainwindow.h \
    src/canvas.h \
@@ -29,7 +31,9 @@ HEADERS  += src/mainwindow.h \
     src/flowline.h \
     src/flowitem.h \
     src/newfiledialog.h \
-    src/aux.h
+    src/aux.h \
+    src/command_manager.h \
+    src/commands.h
 
 RESOURCES += images.qrc
 

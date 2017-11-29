@@ -1,0 +1,46 @@
+#ifndef COMMAND_H
+#define COMMAND_H
+
+#include <QGraphicsItem>
+
+class QGraphicsScene;
+
+class Command
+{
+protected:
+    QGraphicsItem *item;
+public:
+    Command(QGraphicsItem *item);
+    virtual ~Command() {}
+    virtual void undo() = 0;
+};
+
+class MoveCommand : public Command
+{
+protected:
+    /// previous position
+    qreal posX;
+    qreal posY;
+    bool linepoint;
+    bool p2;
+
+public:
+    MoveCommand(QGraphicsItem *item, qreal posX, qreal posY);
+    MoveCommand(QGraphicsItem *item, QPointF point, bool isp2 = false);
+    ~MoveCommand() {}
+
+    virtual void undo() override;
+};
+
+class InsertDeleteCommand : public Command
+{
+    QGraphicsScene *scene;
+    bool toDelete;
+public:
+    InsertDeleteCommand(QGraphicsItem *item, QGraphicsScene *scene, bool toDelete = false);
+    ~InsertDeleteCommand() {}
+
+    virtual void undo() override;
+};
+
+#endif // COMMAND_H

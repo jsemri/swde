@@ -43,17 +43,18 @@ void Canvas::mousePressEvent(QGraphicsSceneMouseEvent *event) {
             item->setPos(event->scenePos());
             item->setZValue(getZValue());
             getInside(item);
-            emit itemInserted(item);
+            addToHistory(new InsertDeleteCommand(item, this, true));
             break;
         case MoveItem:
+        {
             // resize action
             for (auto & it : selectedItems()) {
                 if (it->type() == FlowPolygon::Type) {
                     qreal x = event->scenePos().x();
                     qreal y = event->scenePos().y();
                     QPointF corner = it->boundingRect().bottomRight();
-                    qreal cx = corner.x() + activeItem->x();
-                    qreal cy = corner.y() + activeItem->y();
+                    qreal cx = corner.x() + it->x();//activeItem->x();
+                    qreal cy = corner.y() + it->y();//activeItem->y();
                     if ( cx > x && cx - x < 20 && cy > y && cy - y < 20)
                     {
                         qDebug() << "switched to resize mode";
@@ -65,26 +66,38 @@ void Canvas::mousePressEvent(QGraphicsSceneMouseEvent *event) {
                 }
             }
             qDebug() << "moving item";
-            activeItem = itemAt(event->scenePos(), QTransform());
-            if (activeItem && activeItem->type() == FlowLine::Type) {
-                // moving arrow
-                arrow = static_cast<FlowLine*>(activeItem);
-                qreal x = event->scenePos().x();
-                qreal y = event->scenePos().y();
-                if (fabs(arrow->line().p1().x() + arrow->x() - x) < 15 &&
-                    fabs(arrow->line().p1().y() + arrow->y() - y) < 15)
-                {
-                    mode = MoveLineP1;
+            if ((activeItem = itemAt(event->scenePos(), QTransform()))) {
+                if (activeItem && activeItem->type() == FlowLine::Type) {
+                    // moving arrow
+                    arrow = static_cast<FlowLine*>(activeItem);
+                    qreal x = event->scenePos().x();
+                    qreal y = event->scenePos().y();
+                    if (fabs(arrow->line().p1().x() + arrow->x() - x) < 15 &&
+                        fabs(arrow->line().p1().y() + arrow->y() - y) < 15)
+                    {
+                        addToHistory(new MoveCommand(arrow, arrow->line().p1(), true));
+                        mode = MoveLineP1;
+                    }
+                    else if (fabs(arrow->line().p2().x() + arrow->x() - x) < 15 &&
+                             fabs(arrow->line().p2().y() + arrow->y() - y) < 15)
+                    {
+                        addToHistory(new MoveCommand(arrow, arrow->line().p2()));
+                        mode = MoveLineP2;
+                    }
+                    else {
+                        addToHistory(new MoveCommand(activeItem, activeItem->x(),
+                                                     activeItem->y()));
+                    }
                 }
-                else if (fabs(arrow->line().p2().x() + arrow->x() - x) < 15 &&
-                         fabs(arrow->line().p2().y() + arrow->y() - y) < 15)
-                {
-                    mode = MoveLineP2;
+                else {
+                    addToHistory(new MoveCommand(activeItem, activeItem->x(),
+                                                 activeItem->y()));
                 }
             }
 
             QGraphicsScene::mousePressEvent(event);
             break;
+        }
         case InsertLine:
             qDebug() << "inserting line";
             arrow = new FlowLine(itemType == FlowItem::Type::Arrow,
@@ -92,6 +105,7 @@ void Canvas::mousePressEvent(QGraphicsSceneMouseEvent *event) {
                                  event->scenePos(),event->scenePos());
             addItem(arrow);
             arrow->setZValue(getZValue());
+            // TODO delete command
             break;
         case InsertText:
             qDebug() << "inserting text";
@@ -105,8 +119,10 @@ void Canvas::mousePressEvent(QGraphicsSceneMouseEvent *event) {
                     SLOT(editorLostFocus(TextField*)));
             connect(text, SIGNAL(selectedChange(QGraphicsItem*)), this,
                     SIGNAL(itemSelected(QGraphicsItem*)));
+            addToHistory(new InsertDeleteCommand(text, this, true));
             emit textInserted(text);
             QGraphicsScene::mousePressEvent(event);
+            // TODO delete command
             break;
         default:
             qDebug() << "undefined operation";
@@ -171,6 +187,7 @@ void Canvas::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
             mode = MoveItem;
         case InsertLine:
             arrow = 0;
+            addToHistory(new InsertDeleteCommand(arrow, this, true));
         case MoveItem:
             break;
         default:
@@ -235,22 +252,7 @@ bool Canvas::isInside(QPointF point) const {
 }
 
 void Canvas::pasteItem(QGraphicsItem *itemCopy) {
-    QGraphicsItem *res;
-    if (itemCopy->type() == FlowPolygon::Type) {
-        res = new FlowPolygon(static_cast<FlowPolygon*>(itemCopy));
-    }
-    else if (itemCopy->type() == FlowLine::Type) {
-        res = new FlowLine(static_cast<FlowLine*>(itemCopy));
-    }
-    else if (itemCopy->type() == TextField::Type) {
-        res = new TextField(static_cast<TextField*>(itemCopy));
-        connect(static_cast<TextField*>(res), SIGNAL(lostFocus(TextField*)),
-                this, SLOT(editorLostFocus(TextField*)));
-        connect(static_cast<TextField*>(res),
-                SIGNAL(selectedChange(QGraphicsItem*)), this,
-                SIGNAL(itemSelected(QGraphicsItem*)));
-    }
-
+    QGraphicsItem *res = copyItem(itemCopy);
     addItem(res);
     QGraphicsView *v = views().back();
     QPoint p = v->mapFromGlobal(QCursor::pos());
@@ -269,6 +271,7 @@ void Canvas::pasteItem(QGraphicsItem *itemCopy) {
         res->setPos(itemCopy->pos());
     }
     getInside(res);
+    addToHistory(new InsertDeleteCommand(res, this, true));
 }
 
 void Canvas::setFont(const QFont &font) {
@@ -429,4 +432,49 @@ void Canvas::load(const QString &file) {
     }
     modified = false;
     input.close();
+}
+
+void Canvas::undo() {
+    if (!commands.isEmpty()) {
+        qDebug() << "undoing";
+        commands.undo();
+       // disable button
+       if (commands.isEmpty()) {
+           static_cast<MainWindow*>(parent())->updateUndo(false);
+       }
+    }
+}
+
+void Canvas::remove() {
+    for (auto &i : selectedItems()) {
+        QGraphicsItem *item = copyItem(i);
+        item->setPos(i->pos());
+        addToHistory(new InsertDeleteCommand(item, this));
+        removeItem(i);
+        break;
+    }
+}
+
+QGraphicsItem *Canvas::copyItem(QGraphicsItem *itemCopy) {
+    QGraphicsItem *res;
+    if (itemCopy->type() == FlowPolygon::Type) {
+        res = new FlowPolygon(static_cast<FlowPolygon*>(itemCopy));
+    }
+    else if (itemCopy->type() == FlowLine::Type) {
+        res = new FlowLine(static_cast<FlowLine*>(itemCopy));
+    }
+    else if (itemCopy->type() == TextField::Type) {
+        res = new TextField(static_cast<TextField*>(itemCopy));
+        connect(static_cast<TextField*>(res), SIGNAL(lostFocus(TextField*)),
+                this, SLOT(editorLostFocus(TextField*)));
+        connect(static_cast<TextField*>(res),
+                SIGNAL(selectedChange(QGraphicsItem*)), this,
+                SIGNAL(itemSelected(QGraphicsItem*)));
+    }
+    return res;
+}
+
+void Canvas::addToHistory(Command *cmd) {
+    commands.add(cmd);
+    static_cast<MainWindow*>(parent())->updateUndo(true);
 }

@@ -3,6 +3,7 @@
 
 #include <QGraphicsLineItem>
 #include <QPixmap>
+#include <QPen>
 
 #include <sstream>
 

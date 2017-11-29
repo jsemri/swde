@@ -42,13 +42,6 @@ MainWindow::MainWindow(QWidget *parent) :
     canvas = new Canvas(editMenu, this);
     connect(canvas, SIGNAL(textInserted(QGraphicsTextItem*)), this,
             SLOT(textInserted(QGraphicsTextItem*)));
-    connect(canvas, SIGNAL(itemInserted(FlowPolygon*)), this,
-            SLOT(itemInserted(FlowPolygon*)));
-    connect(canvas, SIGNAL(itemSelected(QGraphicsItem*)), this,
-            SLOT(itemSelected(QGraphicsItem*)));
-    connect(canvas, SIGNAL(arrowInserted(void)), this,
-            SLOT(arrowInserted(void)));
-
     view = new QGraphicsView(canvas);
     view->fitInView(0, 0, 500, 400, Qt::KeepAspectRatio);
     view->setDragMode(QGraphicsView::NoDrag);
@@ -106,6 +99,11 @@ void MainWindow::createActions()
     pasteAction->setShortcut(tr("Ctrl+v"));
     connect(pasteAction, SIGNAL(triggered()), this, SLOT(paste()));
     pasteAction->setEnabled(false);
+
+    undoAction = new QAction(QIcon(":/images/undo.png"), tr("Undo"), this);
+    undoAction->setShortcut(tr("Ctrl+z"));
+    connect(undoAction, SIGNAL(triggered()), this, SLOT(undo()));
+    undoAction->setEnabled(false);
 
     toBoldAction = new QAction(QIcon(":/images/bold.png"), tr("Bold"), this);
     toBoldAction->setCheckable(true);
@@ -184,21 +182,24 @@ void MainWindow::createToolbars() {
     // save, load, new
     fileToolbar = addToolBar("file");
     fileToolbar->addAction(newAction);
-    fileToolbar->addAction(exitAction);
     fileToolbar->addAction(loadAction);
     fileToolbar->addAction(saveAction);
     fileToolbar->addAction(saveAsAction);
     fileToolbar->addAction(toPngAction);
+    fileToolbar->addSeparator();
 
     editToolbar = addToolBar(tr("Edit Item"));
     editToolbar->addAction(deleteAction);
     editToolbar->addAction(copyAction);
     editToolbar->addAction(pasteAction);
+    editToolbar->addAction(undoAction);
+    editToolbar->addSeparator();
 
     // aspects
     aspectToolbar = addToolBar(tr("Aspect"));
     aspectToolbar->addAction(putFrontAction);
     aspectToolbar->addAction(putBackAction);
+
 
     QComboBox *scaleCombo = new QComboBox;
     QStringList scales;
@@ -209,6 +210,7 @@ void MainWindow::createToolbars() {
     connect(scaleCombo, SIGNAL(currentIndexChanged(QString)),
             this, SLOT(scaleChanged(QString)));
     aspectToolbar->addWidget(scaleCombo);
+    aspectToolbar->addSeparator();
 
     // nodes and arrows color & border toolbar
     // shape color
@@ -241,7 +243,7 @@ void MainWindow::createToolbars() {
 
     // border width
     borderWidthCombo = new QComboBox;
-    for (int i = 1; i < 9; i++) {
+    for (int i = 1; i < 7; i++) {
         borderWidthCombo->addItem(createBorderIcon(Qt::black, i),
                                   QString().setNum(i), i);
     }
@@ -253,6 +255,7 @@ void MainWindow::createToolbars() {
     itemToolbar->addWidget(colorButton);
     itemToolbar->addWidget(borderColorButton);
     itemToolbar->addWidget(borderWidthCombo);
+    itemToolbar->addSeparator();
 
     // text
     fontSizeCombo = new QComboBox;
@@ -406,24 +409,12 @@ void MainWindow::textInserted(QGraphicsTextItem *item) {
     itemButtons->button(FlowItem::Type::TextField)->setChecked(false);
 }
 
-void MainWindow::itemSelected(QGraphicsItem *item) {
-    qDebug() << "item selected";
-    Q_UNUSED(item);
-}
-
-void MainWindow::itemInserted(FlowPolygon *item) {
-    Q_UNUSED(item);
-    // TODO some stuff for undo operation
-}
-
-void MainWindow::arrowInserted() {
-
+void MainWindow::updateUndo(bool enabled) {
+    undoAction->setEnabled(enabled);
 }
 
 void MainWindow::deleteItem() {
-    for (auto &i : canvas->selectedItems()) {
-        canvas->removeItem(i);
-    }
+    canvas->remove();
 }
 
 void MainWindow::putFront() {
@@ -631,4 +622,8 @@ void MainWindow::closeEvent(QCloseEvent *event) {
     if (unsavedChangesWarning()) {
         event->accept();
     }
+}
+
+void MainWindow::undo() {
+    canvas->undo();
 }
