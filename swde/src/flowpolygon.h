@@ -10,7 +10,6 @@ class FlowPolygon : public QGraphicsPolygonItem, public FlowItem
 {
 private:
     FlowItem::Type itemType;
-    QPolygonF polyg;
 
     static QPolygonF buildPolygon(FlowItem::Type itemType);
 
@@ -27,7 +26,6 @@ public:
 
     ~FlowPolygon() {}
 
-    QPolygonF polygon() const { return polyg; }
     int type() const override { return Type; }
     QPixmap image() const override;
     void serialize(std::ofstream &out) const override;

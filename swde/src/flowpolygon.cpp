@@ -15,8 +15,7 @@ FlowPolygon::FlowPolygon
 (FlowItem::Type type, QColor color, QPen pen, QGraphicsItem *parent) :
     QGraphicsPolygonItem(parent), FlowItem{}, itemType{type}
 {
-    polyg = buildPolygon(itemType);
-    setPolygon(polyg);
+    setPolygon(buildPolygon(itemType));
     changeColor(color);
     setPen(pen);
     setFlag(QGraphicsItem::ItemIsMovable);
@@ -29,8 +28,7 @@ FlowPolygon::FlowPolygon(FlowPolygon *fpolyg) :
     FlowPolygon{fpolyg->itemType, fpolyg->brush().color(),
                 fpolyg->pen()}
 {
-    polyg = fpolyg->polygon();
-    setPolygon(polyg);
+    setPolygon(fpolyg->polygon());
     setPos(pos());
 }
 
@@ -83,8 +81,7 @@ FlowPolygon::FlowPolygon(std::istringstream &data) :
         }
     }
 
-    polyg = buildPolygon(itemType);
-    setPolygon(polyg);
+    setPolygon(buildPolygon(itemType));
     setFlag(QGraphicsItem::ItemIsMovable);
     setFlag(QGraphicsItem::ItemIsSelectable);
     setFlag(QGraphicsItem::ItemSendsGeometryChanges);
@@ -146,20 +143,12 @@ QPixmap FlowPolygon::image() const
     QPainter painter(&pixmap);
     painter.setPen(QPen(Qt::black, 8));
     painter.translate(75, 75);
-    painter.drawPolyline(polyg);
+    painter.drawPolyline(polygon());
 
     return pixmap;
 }
 
 void FlowPolygon::changeColor(QColor color) {
-    // change color and set brush gradient
-    /*
-    this->color = color;
-    QLinearGradient gradient(0,0,0,45);
-    gradient.setColorAt(0, color);
-    gradient.setColorAt(1, Qt::white);
-    setBrush(gradient);
-    */
     setBrush(color);
 }
 
@@ -167,11 +156,10 @@ void FlowPolygon::changeSize(qreal xratio, qreal yratio) {
     if (xratio == 0) xratio = 0.0001;
     if (yratio == 0) yratio = 0.0001;
     QPolygonF newPolyg;
-    for (auto & point : polyg) {
+    for (auto & point : polygon()) {
         newPolyg.append(QPointF(point.x()*xratio, point.y()*yratio));
     }
-    polyg = newPolyg;
-    setPolygon(polyg);
+    setPolygon(newPolyg);
 }
 
 void FlowPolygon::serialize(std::ofstream &out) const {
@@ -179,9 +167,9 @@ void FlowPolygon::serialize(std::ofstream &out) const {
     print(out, "type", (int)itemType);
     print(out, "pos", x(), y(), zValue());
     print(out, "border", COLOR2STR(pen().color()), pen().width());
-    qreal xratio = polyg.boundingRect().width() /
+    qreal xratio = polygon().boundingRect().width() /
                    buildPolygon(itemType).boundingRect().width();
-    qreal yratio = polyg.boundingRect().height() /
+    qreal yratio = polygon().boundingRect().height() /
                    buildPolygon(itemType).boundingRect().height();
 
     print(out, "ratio", xratio, yratio);

@@ -13,6 +13,7 @@ public:
     Command(QGraphicsItem *item);
     virtual ~Command() {}
     virtual void undo() = 0;
+    QGraphicsItem *getItem() const { return item;}
 };
 
 class MoveCommand : public Command
@@ -39,6 +40,16 @@ class InsertDeleteCommand : public Command
 public:
     InsertDeleteCommand(QGraphicsItem *item, QGraphicsScene *scene, bool toDelete = false);
     ~InsertDeleteCommand() {}
+
+    virtual void undo() override;
+};
+
+class RatioChangeCommand : public Command
+{
+    QPolygonF polygon;
+public:
+    RatioChangeCommand(QGraphicsItem *item, QPolygonF polygon);
+    ~RatioChangeCommand() {}
 
     virtual void undo() override;
 };

@@ -57,7 +57,10 @@ void Canvas::mousePressEvent(QGraphicsSceneMouseEvent *event) {
                     qreal cy = corner.y() + it->y();//activeItem->y();
                     if ( cx > x && cx - x < 20 && cy > y && cy - y < 20)
                     {
+                        // rescaling
                         qDebug() << "switched to resize mode";
+                        QPolygonF p = static_cast<FlowPolygon*>(it)->polygon();
+                        addToHistory(new RatioChangeCommand(it, p));
                         mode = ResizeItem;
                         activeItem = it;
                         modified = true;
@@ -105,7 +108,6 @@ void Canvas::mousePressEvent(QGraphicsSceneMouseEvent *event) {
                                  event->scenePos(),event->scenePos());
             addItem(arrow);
             arrow->setZValue(getZValue());
-            // TODO delete command
             break;
         case InsertText:
             qDebug() << "inserting text";
@@ -122,7 +124,6 @@ void Canvas::mousePressEvent(QGraphicsSceneMouseEvent *event) {
             addToHistory(new InsertDeleteCommand(text, this, true));
             emit textInserted(text);
             QGraphicsScene::mousePressEvent(event);
-            // TODO delete command
             break;
         default:
             qDebug() << "undefined operation";
@@ -149,13 +150,6 @@ void Canvas::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
                 qreal yratio = (event->scenePos().y() - activeItem->y())
                                / corner.y();
                 static_cast<FlowPolygon*>(activeItem)->changeSize(xratio, yratio);
-                /*
-                XXX this also works, but keeps position, what is not desired
-                QMatrix m;
-                m.scale(xratio, yratio);
-                activeItem->setTransform(QTransform(m));
-                */
-
                 getInside(activeItem);
                 break;
             }
@@ -186,8 +180,8 @@ void Canvas::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
         case MoveLineP1:
             mode = MoveItem;
         case InsertLine:
-            arrow = 0;
             addToHistory(new InsertDeleteCommand(arrow, this, true));
+            arrow = 0;
         case MoveItem:
             break;
         default:
@@ -438,10 +432,10 @@ void Canvas::undo() {
     if (!commands.isEmpty()) {
         qDebug() << "undoing";
         commands.undo();
-       // disable button
-       if (commands.isEmpty()) {
-           static_cast<MainWindow*>(parent())->updateUndo(false);
-       }
+        // disable button
+        if (commands.isEmpty()) {
+            static_cast<MainWindow*>(parent())->updateUndo(false);
+        }
     }
 }
 

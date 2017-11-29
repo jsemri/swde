@@ -1,3 +1,5 @@
+#include <QDebug>
+
 #include "command_manager.h"
 #include "commands.h"
 
@@ -25,4 +27,3 @@ void CommandManager::undo()
     delete undoStack.back();
     undoStack.pop_back();
 }
-

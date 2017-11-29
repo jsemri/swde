@@ -3,6 +3,7 @@
 
 #include "commands.h"
 #include "flowline.h"
+#include "flowpolygon.h"
 
 // abstract class command constructor
 
@@ -30,13 +31,16 @@ MoveCommand::MoveCommand(QGraphicsItem *item, QPointF point, bool isp2) :
 void MoveCommand::undo() {
     if (linepoint) {
         if (p2) {
+            qDebug() << "line p1 undo";
             static_cast<FlowLine*>(item)->setBeginPoint(QPointF(posX, posY));
         }
         else {
+            qDebug() << "line p2 undo";
             static_cast<FlowLine*>(item)->setEndPoint(QPointF(posX, posY));
         }
     }
     else {
+        qDebug() << "position undo";
         item->setPos(posX, posY);
     }
     item->update();
@@ -52,10 +56,27 @@ InsertDeleteCommand::InsertDeleteCommand(
 void InsertDeleteCommand::undo() {
     if (item) {
         if (toDelete) {
+            qDebug() << "insert undo";
             scene->removeItem(item);
         }
         else {
+            qDebug() << "delete undo";
             scene->addItem(item);
         }
     }
+    else {
+        qDebug() << "null";
+    }
+}
+
+RatioChangeCommand::RatioChangeCommand(
+        QGraphicsItem *item, QPolygonF polygon) :
+    Command{item}, polygon{polygon}
+{
+
+}
+
+void RatioChangeCommand::undo() {
+    qDebug() << "ratio undo";
+    static_cast<FlowPolygon*>(item)->setPolygon(polygon);
 }
