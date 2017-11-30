@@ -10,10 +10,7 @@ CommandManager::CommandManager()
 
 CommandManager::~CommandManager()
 {
-    while (undoStack.size()) {
-        delete undoStack.back();
-        undoStack.pop_back();
-    }
+    clear();
 }
 
 void CommandManager::add(Command *cmd)
@@ -26,4 +23,12 @@ void CommandManager::undo()
     undoStack.back()->undo();
     delete undoStack.back();
     undoStack.pop_back();
+}
+
+void CommandManager::clear()
+{
+    while (undoStack.size()) {
+        delete undoStack.back();
+        undoStack.pop_back();
+    }
 }

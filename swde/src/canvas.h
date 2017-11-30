@@ -65,6 +65,7 @@ public:
     void setModified(bool m) { modified = m; }
     void undo();
     void remove();
+    void clearHistory();
 
 public slots:
     void setMode(Mode m = MoveItem) { mode = m; }

@@ -19,6 +19,7 @@ public:
     void add(Command *cmd);
     void undo();
     bool isEmpty() const { return undoStack.empty();}
+    void clear();
 };
 
 #endif // COMMANDMANAGER_H

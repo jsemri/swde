@@ -529,6 +529,7 @@ void MainWindow::newFile() {
     if (unsavedChangesWarning()) {
         if (newDialog->exec() != QMessageBox::Cancel) {
             filename = "";
+            canvas->clearHistory();
             canvas->setModified(false);
             canvas->resize(newDialog->getWidth(), newDialog->getHeight());
         }

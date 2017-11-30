@@ -367,7 +367,7 @@ void Canvas::load(const QString &file) {
     if (input.is_open() == false) {
         throw std::runtime_error("Cannot open file");
     }
-
+    clearHistory();
     std::string buf;
     std::string databuf, curItem;
     int width, height;
@@ -471,4 +471,9 @@ QGraphicsItem *Canvas::copyItem(QGraphicsItem *itemCopy) {
 void Canvas::addToHistory(Command *cmd) {
     commands.add(cmd);
     static_cast<MainWindow*>(parent())->updateUndo(true);
+}
+
+void Canvas::clearHistory() {
+    commands.clear();
+    static_cast<MainWindow*>(parent())->updateUndo(false);
 }
