@@ -20,6 +20,7 @@ class QGraphicsItem;
 class QGridLayout;
 class QMessageBox;
 
+// application main window, manages everything
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -47,12 +48,16 @@ private:
     static QWidget *widgetLayout(QLayout *layout);
     bool unsavedChangesWarning();
 
+    // visualization
     QHBoxLayout *layout;
     QGraphicsView *view;
+    // items handlong
     Canvas *canvas;
     QGraphicsItem *itemCopy;
+    // file where result is save, can be empty
     QString filename;
 
+    // some dialogs for handling filesystem operations
     NewFileDialog *newDialog;
     QMessageBox *msgBox;
 
@@ -71,6 +76,7 @@ private:
     QToolBar *itemToolbar;
     QToolBar *aspectToolbar;
 
+    // buttons for changing item properties
     QToolButton *colorButton;
     QToolButton *borderColorButton;
     QComboBox *borderWidthCombo;

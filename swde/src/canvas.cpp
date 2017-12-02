@@ -20,10 +20,10 @@
 #include "textfield.h"
 #include "aux.h"
 
-Canvas::Canvas(QMenu *itemMenu, QWidget *parrent) :
-    QGraphicsScene{parrent}, itemMenu{itemMenu},
-    modified{0}, mode{MoveItem}, itemType{FlowItem::Type::None},
-    activeItem{nullptr}, itemColor(Qt::white), itemPen{QPen(Qt::black, 1)},
+Canvas::Canvas(QWidget *parrent) :
+    QGraphicsScene{parrent}, modified{0}, mode{MoveItem},
+    itemType{FlowItem::Type::None}, activeItem{nullptr},
+    itemColor(Qt::white), itemPen{QPen(Qt::black, 1)},
     ZValue{0}
 {
     textFont.setPointSize(12);
@@ -31,6 +31,7 @@ Canvas::Canvas(QMenu *itemMenu, QWidget *parrent) :
     setBackgroundBrush(Qt::white);
 }
 
+// mouse click/press - inserting, moving, selecting items
 void Canvas::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 
     FlowPolygon *item;
@@ -47,7 +48,7 @@ void Canvas::mousePressEvent(QGraphicsSceneMouseEvent *event) {
             break;
         case MoveItem:
         {
-            // resize action
+            // just check for resize action
             for (auto & it : selectedItems()) {
                 if (it->type() == FlowPolygon::Type) {
                     qreal x = event->scenePos().x();
@@ -72,6 +73,8 @@ void Canvas::mousePressEvent(QGraphicsSceneMouseEvent *event) {
             if ((activeItem = itemAt(event->scenePos(), QTransform()))) {
                 if (activeItem && activeItem->type() == FlowLine::Type) {
                     // moving arrow
+                    // we can move the arrow by modifing its position or
+                    // end points
                     arrow = static_cast<FlowLine*>(activeItem);
                     qreal x = event->scenePos().x();
                     qreal y = event->scenePos().y();
@@ -122,6 +125,7 @@ void Canvas::mousePressEvent(QGraphicsSceneMouseEvent *event) {
             connect(text, SIGNAL(selectedChange(QGraphicsItem*)), this,
                     SIGNAL(itemSelected(QGraphicsItem*)));
             addToHistory(new InsertDeleteCommand(text, this, true));
+            // get focus to inserted textfield
             emit textInserted(text);
             QGraphicsScene::mousePressEvent(event);
             break;
@@ -190,6 +194,7 @@ void Canvas::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
     QGraphicsScene::mouseReleaseEvent(event);
 }
 
+// used after inserting some text
 void Canvas::editorLostFocus(TextField *item) {
     qDebug() << "lost focus";
     QTextCursor cursor = item->textCursor();
@@ -201,6 +206,8 @@ void Canvas::editorLostFocus(TextField *item) {
     }
 }
 
+// get item inside the canvas
+// item cannot be located out of canvas borders
 QPointF Canvas::getInside(QPointF point) const {
     qreal x = point.x();
     qreal y = point.y();
@@ -219,6 +226,8 @@ QPointF Canvas::getInside(QPointF point) const {
     return QPointF(x,y);
 }
 
+// get item inside the canvas
+// item cannot be located out of canvas borders
 void Canvas::getInside(QGraphicsItem *item) const {
     QPointF corner1 = item->boundingRect().topLeft();
     QPointF corner2 = item->boundingRect().bottomRight();
@@ -239,6 +248,7 @@ void Canvas::getInside(QGraphicsItem *item) const {
     }
 }
 
+// return true if the item is fully inside the canvas
 bool Canvas::isInside(QPointF point) const {
     qreal x = point.x();
     qreal y = point.y();
@@ -249,6 +259,7 @@ void Canvas::pasteItem(QGraphicsItem *itemCopy) {
     QGraphicsItem *res = copyItem(itemCopy);
     addItem(res);
     QGraphicsView *v = views().back();
+    // try to paste item at current position of the cursor
     QPoint p = v->mapFromGlobal(QCursor::pos());
     QPointF point = v->mapToScene(p);
     qDebug() << point << QCursor::pos();
@@ -262,6 +273,7 @@ void Canvas::pasteItem(QGraphicsItem *itemCopy) {
         res->setPos(point);
     }
     else {
+        // paste item where copied item was located
         res->setPos(itemCopy->pos());
     }
     getInside(res);
@@ -280,6 +292,7 @@ void Canvas::setFont(const QFont &font) {
     }
 }
 
+// resize whole canvas
 void Canvas::resize(int w, int h) {
     clear();
     setSceneRect(0, 0, w, h);
@@ -288,6 +301,10 @@ void Canvas::resize(int w, int h) {
     addLine(width(), height(), 0, height(),QPen(QBrush(Qt::blue),2));
     addLine(0, height(), 0, 0, QPen(QBrush(Qt::blue),2));
 }
+
+//
+// slots for changing item properties from toolbars
+//
 
 void Canvas::penWidthChanged(int width) {
     itemPen.setWidth(width);
@@ -439,6 +456,7 @@ void Canvas::undo() {
     }
 }
 
+// remove item from canvas, but copy it to undo stack
 void Canvas::remove() {
     for (auto &i : selectedItems()) {
         QGraphicsItem *item = copyItem(i);

@@ -33,3 +33,6 @@ clean:
 	rm -f $(PROJ_PATH)/Makefile
 	rm -f $(PROJ_PATH)/$(PROJ_NAME)
 	rm -f $(PROJ_NAME)
+
+pack:
+	zip -r itu2017.zip swde Makefile

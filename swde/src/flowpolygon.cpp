@@ -152,7 +152,9 @@ void FlowPolygon::changeColor(QColor color) {
     setBrush(color);
 }
 
+// scaling
 void FlowPolygon::changeSize(qreal xratio, qreal yratio) {
+    // avoid zero, because `any * 0 == 0`
     if (xratio == 0) xratio = 0.0001;
     if (yratio == 0) yratio = 0.0001;
     QPolygonF newPolyg;

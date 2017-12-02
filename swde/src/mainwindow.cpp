@@ -39,7 +39,7 @@ MainWindow::MainWindow(QWidget *parent) :
     createMenus();
     createToolbox();
 
-    canvas = new Canvas(editMenu, this);
+    canvas = new Canvas(this);
     connect(canvas, SIGNAL(textInserted(QGraphicsTextItem*)), this,
             SLOT(textInserted(QGraphicsTextItem*)));
     view = new QGraphicsView(canvas);
@@ -68,11 +68,13 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+    // just remove the item copied to our 'clipboard'
     if (itemCopy) {
         delete itemCopy;
     }
 }
 
+// creating toolbar actions - filesystem, item modifycation, copy, paste, etc.
 void MainWindow::createActions()
 {
     exitAction = new QAction(QIcon(":/images/exit.png"), tr("E&xit"), this);
@@ -147,7 +149,6 @@ void MainWindow::createToolbox()
         it.next();
         createItemButton(tbLayout, it.key(), it.value());
     }
-    //tbLayout->setColumnStretch(2, 10);
     tbLayout->setColumnMinimumWidth(0, 1.678 * ICON_X);
     QWidget *widget = widgetLayout(tbLayout);
 
@@ -188,6 +189,7 @@ void MainWindow::createToolbars() {
     fileToolbar->addAction(toPngAction);
     fileToolbar->addSeparator();
 
+    // useful operations
     editToolbar = addToolBar(tr("Edit Item"));
     editToolbar->addAction(deleteAction);
     editToolbar->addAction(copyAction);
@@ -273,6 +275,7 @@ void MainWindow::createToolbars() {
     textToolbar->addAction(toUnderlineAction);
 }
 
+// just create widget with containing some layout
 QWidget *MainWindow::widgetLayout(QLayout *layout)
 {
     QWidget *widget = new QWidget;
@@ -280,6 +283,7 @@ QWidget *MainWindow::widgetLayout(QLayout *layout)
     return widget;
 }
 
+// creating buttons for item inserting - right bar
 void MainWindow::createItemButton(QGridLayout *gLayout, FlowItem::Type type,
                                   QString statusTip)
 {
@@ -351,6 +355,7 @@ QIcon MainWindow::createBorderIcon(QColor color, int width)
     return QIcon(pixmap);
 }
 
+// clear focus on ESC
 void MainWindow::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_Escape) {
@@ -368,6 +373,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 // slot methods implementation
 // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
+// item button - inserting an item, left bar
 void MainWindow::itemButtonClicked(int id)
 {
     // unselect all items
@@ -387,6 +393,7 @@ void MainWindow::itemButtonClicked(int id)
         return;
     }
 
+    // setting canvas mode
     switch (FlowItem::Type(id)) {
         case FlowItem::Type::TextField:
             canvas->setMode(Canvas::InsertText);
@@ -399,6 +406,7 @@ void MainWindow::itemButtonClicked(int id)
             canvas->setMode(Canvas::InsertItem);
     }
 
+    // set canvas insert item type - only for nodes
     canvas->setItemType(FlowItem::Type(id));
 }
 
@@ -409,6 +417,7 @@ void MainWindow::textInserted(QGraphicsTextItem *item) {
     itemButtons->button(FlowItem::Type::TextField)->setChecked(false);
 }
 
+// handling the undo button appearance
 void MainWindow::updateUndo(bool enabled) {
     undoAction->setEnabled(enabled);
 }
@@ -417,6 +426,7 @@ void MainWindow::deleteItem() {
     canvas->remove();
 }
 
+// set max z coordinate
 void MainWindow::putFront() {
     qreal zmax = 0;
     for (auto &i : canvas->items()) {
@@ -429,6 +439,7 @@ void MainWindow::putFront() {
     }
 }
 
+// set min z coordinate
 void MainWindow::putBack() {
     qreal zmin = 0;
     for (auto &i : canvas->items()) {
@@ -465,6 +476,7 @@ void MainWindow::paste() {
     canvas->pasteItem(itemCopy);
 }
 
+// aspect ration handling
 void MainWindow::scaleChanged(const QString &scale)
 {
     QMatrix m = view->matrix();
@@ -514,6 +526,7 @@ void MainWindow::fontSizeChanged(QString s) {
     changeFont();
 }
 
+// dialog for filesystem operations
 void MainWindow::createDialogs() {
     newDialog = new NewFileDialog(this);
     msgBox = new QMessageBox(this);
@@ -525,6 +538,7 @@ void MainWindow::createDialogs() {
     msgBox->setDefaultButton(QMessageBox::Cancel);
 }
 
+// reset canvas and set its size
 void MainWindow::newFile() {
     if (unsavedChangesWarning()) {
         if (newDialog->exec() != QMessageBox::Cancel) {
@@ -555,6 +569,7 @@ void MainWindow::loadFile() {
     }
 }
 
+// in case canvas has been modified throw an warning messsage
 bool MainWindow::unsavedChangesWarning() {
     if (canvas->isModified()) {
         int ret = msgBox->exec();

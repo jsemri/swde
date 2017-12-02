@@ -6,11 +6,13 @@
 #include <sstream>
 #include "flowitem.h"
 
+// class for representing various nodes
 class FlowPolygon : public QGraphicsPolygonItem, public FlowItem
 {
 private:
+    // node type e.g. input, process, decision
     FlowItem::Type itemType;
-
+    // return corresponding polygon to specific item type
     static QPolygonF buildPolygon(FlowItem::Type itemType);
 
 public:

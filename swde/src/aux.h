@@ -4,6 +4,8 @@
 #include <QColor>
 #include <QString>
 
+// printing serialized data to output (file)
+
 template<typename T1, typename T2>
 void print(T1 &out, T2 arg) {
     out << arg << "\n";

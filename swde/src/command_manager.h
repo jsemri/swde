@@ -7,9 +7,11 @@
 
 class Command;
 
+// providing undo operaions using command design patter
 class CommandManager
 {
 private:
+    // here are commands stored
     std::vector<Command*> undoStack;
 
 public:

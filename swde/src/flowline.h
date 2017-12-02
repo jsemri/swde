@@ -16,9 +16,11 @@ class QRectF;
 class QGraphicsSceneMouseEvent;
 class QPainterPath;
 
+// represents line or line with arrow
 class FlowLine : public QGraphicsLineItem, public FlowItem
 {
 public:
+    // needed for identifycation for QGraphicsItem.type()
     enum { Type = UserType + 21 };
 
     FlowLine(bool arrowSet = false, QPen pen = QPen(Qt::black, 2),

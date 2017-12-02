@@ -5,6 +5,7 @@
 #include <QPixmap>
 #include <fstream>
 
+// abstract class for all items
 class FlowItem {
 public:
     enum Type {Terminal = 0, Decision, Process, IO, Circle,
@@ -21,4 +22,3 @@ public:
 
 
 #endif // FLOWCHARTITEMS
-

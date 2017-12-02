@@ -15,6 +15,7 @@ class TextField;
 class QGraphicsTextItem;
 class FlowLine;
 
+// Main class for managing graphics items
 class Canvas : public QGraphicsScene
 {
     Q_OBJECT
@@ -23,20 +24,23 @@ public:
     enum Mode {InsertItem, InsertLine, InsertText, MoveItem, MoveLineP1,
                MoveLineP2, ResizeItem, Idle};
 private:
-    QMenu *itemMenu;
-
+    // has been canvas modifyied flag
     bool modified;
     Mode mode;
+    // type of inserted item
     FlowItem::Type itemType;
-
+    // auxiliary variables for item manipulation
     QGraphicsItem *activeItem;
     QPointF startArrowPoint;
     bool startArrowPointSet;
     FlowLine *arrow;
+    // variables for item modification
     QColor itemColor;
     QPen itemPen;
     QFont textFont;
+    // z coordinate of newly added item
     qreal ZValue;
+    // undo history
     CommandManager commands;
 
     void getInside(QGraphicsItem *item) const;
@@ -53,7 +57,7 @@ private:
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
 
 public:
-    explicit Canvas(QMenu *itemMenu, QWidget *parrent=0);
+    explicit Canvas(QWidget *parrent=0);
     void pasteItem(QGraphicsItem *itemCopy);
     void resize(int width, int h);
     void setFont(const QFont &font);

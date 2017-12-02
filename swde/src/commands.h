@@ -5,9 +5,11 @@
 
 class QGraphicsScene;
 
+// providing undo operaions using command design patter
 class Command
 {
 protected:
+    // item to change / add / delete
     QGraphicsItem *item;
 public:
     Command(QGraphicsItem *item);
@@ -15,6 +17,8 @@ public:
     virtual void undo() = 0;
     QGraphicsItem *getItem() const { return item;}
 };
+
+// different commands for different operations
 
 class MoveCommand : public Command
 {

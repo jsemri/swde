@@ -14,14 +14,14 @@ Command::Command(QGraphicsItem *item) : item{item}
 
 // different commands implementations
 
-// item
+// moving the item
 MoveCommand::MoveCommand(QGraphicsItem *item, qreal posX, qreal posY) :
     Command{item}, posX{posX}, posY{posY}, linepoint{false}, p2{false}
 {
 
 }
 
-// line
+// moving the line
 MoveCommand::MoveCommand(QGraphicsItem *item, QPointF point, bool isp2) :
     Command{item}, posX{point.x()}, posY{point.y()}, linepoint{true}, p2{isp2}
 {
